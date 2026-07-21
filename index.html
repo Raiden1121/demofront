@@ -1,0 +1,2435 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIoTers DevOps - 模型管理 Demo</title>
+  <style>
+    :root {
+      --ink: #1f2328;
+      --muted: #68717a;
+      --line: #cbd5dc;
+      --soft-line: #e5e8eb;
+      --panel: #ffffff;
+      --paper: #fbfaf7;
+      --sidebar: #f3f2ef;
+      --brand: #075b72;
+      --brand-deep: #064a60;
+      --ok: #28784f;
+      --ok-bg: #e8f6ea;
+      --warn: #e86d15;
+      --warn-bg: #fff0e4;
+      --bad: #d71920;
+      --bad-bg: #fff0f1;
+      --table-head: #e9e7e3;
+      --shadow: 0 1px 2px rgba(12, 35, 45, .08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 1px 1px, rgba(45, 66, 72, .14) 1px, transparent 0) 0 0 / 18px 18px,
+        var(--paper);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 292px minmax(0, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--paper);
+    }
+
+    .sidebar {
+      min-height: 100vh;
+      padding: 18px 18px 26px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 0 10px 58px;
+    }
+
+    .brand-mark {
+      width: 45px;
+      height: 45px;
+      border-radius: 5px;
+      background: var(--brand);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 22px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      color: #064c61;
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: #4c565d;
+      font-size: 13px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav-item {
+      min-height: 54px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #475059;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 20px;
+      text-align: left;
+    }
+
+    .nav-item.active {
+      background: #dedddd;
+      color: #2f363c;
+      font-weight: 700;
+    }
+
+    .nav-icon {
+      width: 24px;
+      font-size: 23px;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      border-top: 1px solid var(--line);
+      padding-top: 20px;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 26px 28px 38px;
+    }
+
+    .toolbar,
+    .report-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .title h2,
+    .report-title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+      color: #171a1d;
+    }
+
+    .title p {
+      margin: 8px 0 0;
+      color: #47535d;
+      font-size: 14px;
+    }
+
+    .filters {
+      margin-top: 24px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 22px;
+    }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      color: #3d454d;
+      padding: 0 4px 9px;
+      border-bottom: 2px solid transparent;
+      font-size: 14px;
+    }
+
+    .tab.active {
+      border-color: var(--brand);
+      color: var(--brand);
+      font-weight: 800;
+    }
+
+    .search-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 6px;
+    }
+
+    .search {
+      width: 220px;
+      height: 31px;
+      border: 1px solid #b9c6ce;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 13px;
+      background: #fff;
+      color: #6c7580;
+    }
+
+    .search input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .summary-count {
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .summary-count strong {
+      margin: 0 4px;
+    }
+
+    .ok-text {
+      color: var(--ok);
+      font-weight: 800;
+    }
+
+    .warn-text {
+      color: var(--warn);
+      font-weight: 800;
+    }
+
+    .bad-text {
+      color: var(--bad);
+      font-weight: 800;
+    }
+
+    .section-title {
+      margin: 20px 0 10px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .section-title-row {
+      margin: 20px 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .section-title-row .section-title {
+      margin: 0;
+    }
+
+    .sort-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #4d5962;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .sort-controls select {
+      min-width: 158px;
+      height: 30px;
+      border: 1px solid #bec9d0;
+      border-radius: 6px;
+      background: #fff;
+      color: #1f2328;
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    .sort-direction {
+      width: 34px;
+      height: 30px;
+      border: 1px solid #bec9d0;
+      border-radius: 6px;
+      background: #fff;
+      color: var(--brand);
+      font-weight: 900;
+    }
+
+    .model-group,
+    .critical,
+    .detail-panel,
+    .metric-card,
+    .chart-card,
+    .quality-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .site-name {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .building {
+      color: var(--brand);
+      font-size: 20px;
+    }
+
+    .site-name strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      letter-spacing: 0;
+    }
+
+    .site-name code,
+    .small-code {
+      font-size: 12px;
+      color: #2f363c;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 22px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.ok {
+      color: var(--ok);
+      background: var(--ok-bg);
+    }
+
+    .badge.warn {
+      color: var(--warn);
+      background: var(--warn-bg);
+    }
+
+    .badge.bad {
+      color: var(--bad);
+      background: var(--bad-bg);
+    }
+
+    .site-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      min-width: 340px;
+    }
+
+    .site-stat {
+      text-align: center;
+      border-right: 1px solid var(--line);
+      min-height: 40px;
+    }
+
+    .site-stat:last-child {
+      border-right: 0;
+    }
+
+    .site-stat span {
+      display: block;
+      color: #4d5962;
+      font-size: 11px;
+    }
+
+    .site-stat strong {
+      font-size: 16px;
+    }
+
+    .model-group {
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    .model-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .group-head {
+      min-height: 62px;
+      padding: 10px 14px;
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto 34px;
+      align-items: center;
+      gap: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .model-group.collapsed .group-head {
+      border-bottom: 0;
+    }
+
+    .group-toggle {
+      width: 30px;
+      height: 30px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #111820;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .group-toggle:hover {
+      background: #edf3f6;
+    }
+
+    .model-table-wrap {
+      overflow-x: auto;
+    }
+
+    .kind-block {
+      margin: 12px 12px 14px;
+      border: 1px solid var(--soft-line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .kind-block:first-child {
+      margin-top: 12px;
+    }
+
+    .kind-head {
+      min-height: 42px;
+      padding: 0;
+      display: grid;
+      grid-template-columns: 2fr .9fr .9fr 1.1fr 1.2fr 1fr .9fr;
+      align-items: center;
+      background: #f1f5f6;
+      color: #38434c;
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      border-left: 5px solid var(--brand);
+    }
+
+    .kind-head-main {
+      grid-column: 1 / 4;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px 9px 16px;
+      min-width: 0;
+    }
+
+    .kind-block.forecast .kind-head {
+      background: #eef7f4;
+      border-left-color: #28784f;
+    }
+
+    .kind-block.anomaly .kind-head {
+      background: #fff5ed;
+      border-left-color: #e86d15;
+    }
+
+    .kind-block.recommender .kind-head {
+      background: #eef6f8;
+      border-left-color: var(--brand);
+    }
+
+    .kind-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      border: 1px solid rgba(70, 86, 94, .18);
+      color: var(--brand);
+      font-size: 13px;
+    }
+
+    .kind-count {
+      color: #5b6268;
+      background: #e7e6e3;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      text-transform: none;
+    }
+
+    .kind-desc {
+      grid-column: 4 / 8;
+      justify-self: end;
+      padding: 0 14px;
+      color: #68717a;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: none;
+    }
+
+    .model-table {
+      table-layout: fixed;
+    }
+
+    .model-table th,
+    .model-table td {
+      width: 14.285%;
+      overflow-wrap: anywhere;
+      word-break: normal;
+      line-height: 1.35;
+    }
+
+    .model-table .mono {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .group-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 800;
+    }
+
+    .group-site-id {
+      display: block;
+      margin-top: 3px;
+      padding-left: 18px;
+      color: #2f363c;
+      font-size: 12px;
+    }
+
+    .group-summary {
+      min-width: 0;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #43b850;
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+
+    .dot.ok {
+      background: #43b850;
+    }
+
+    .dot.warn {
+      background: var(--warn);
+    }
+
+    .dot.bad {
+      background: var(--bad);
+    }
+
+    .count-chip {
+      color: #5b6268;
+      background: #e7e6e3;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      color: #424c55;
+      font-weight: 700;
+      text-align: left;
+      background: #f8f8f6;
+    }
+
+    th,
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: background .15s ease;
+    }
+
+    tbody tr.clickable:hover {
+      background: #eef6f8;
+      cursor: pointer;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .critical {
+      margin-top: 18px;
+      padding: 19px 20px 14px;
+      border-color: #ffc9c9;
+      background: #fff9f7;
+    }
+
+    .critical-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 12px;
+    }
+
+    .critical-title {
+      color: #c7131b;
+      font-size: 16px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .empty {
+      padding: 18px 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .detail-view {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .report-bar {
+      margin: -26px -28px 24px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fbfaf7;
+    }
+
+    .report-title {
+      color: var(--brand);
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .report-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #535d66;
+      font-size: 13px;
+    }
+
+    .btn {
+      height: 36px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+    }
+
+    .btn.primary {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    .btn.ghost {
+      background: #fff;
+      color: var(--brand);
+      border-color: #b8c8d0;
+    }
+
+    .select-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      color: #555f68;
+      font-size: 14px;
+    }
+
+    select {
+      min-width: 190px;
+      height: 32px;
+      border: 1px solid #bec9d0;
+      border-radius: 6px;
+      background: #fff;
+      color: #1f2328;
+      padding: 0 12px;
+    }
+
+    .detail-subtitle {
+      margin: 0 0 14px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .detail-panel {
+      padding: 20px 22px;
+      margin-bottom: 14px;
+    }
+
+    .basic-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 28px;
+    }
+
+    .service-info {
+      margin-bottom: 26px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .service-title {
+      min-height: 42px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      color: var(--brand);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .service-grid {
+      border-top: 1px solid var(--line);
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 18px;
+    }
+
+    .label {
+      display: block;
+      color: #69727b;
+      font-size: 10px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .value {
+      font-size: 15px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .secondary-metric-section {
+      margin: -12px 0 28px;
+    }
+
+    .secondary-metric-section.hidden {
+      display: none;
+    }
+
+    .secondary-metric-title {
+      margin: 0 0 12px;
+      color: #2e3a43;
+      font-size: 15px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .secondary-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+    }
+
+    .secondary-metrics .metric-card {
+      min-height: 82px;
+      padding: 13px 15px 11px;
+    }
+
+    .secondary-metrics .metric-card h4 {
+      margin-bottom: 7px;
+      font-size: 11px;
+    }
+
+    .secondary-metrics .metric-value {
+      margin-bottom: 0;
+      font-size: 18px;
+    }
+
+    .metric-card {
+      min-height: 121px;
+      padding: 18px 18px 14px;
+    }
+
+    .metric-card h4 {
+      margin: 0 0 10px;
+      color: #666f78;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .metric-value {
+      display: block;
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .metric-note {
+      color: #626c75;
+      font-size: 11px;
+    }
+
+    .scope-details {
+      display: inline-block;
+    }
+
+    .scope-details summary {
+      color: var(--brand);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .scope-list {
+      margin-top: 8px;
+      display: grid;
+      gap: 4px;
+      color: #2f363c;
+      font-size: 12px;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      margin-bottom: 28px;
+    }
+
+    .chart-card {
+      min-height: 354px;
+      padding: 22px;
+    }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .chart-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .chart-subtitle {
+      margin: 5px 0 0;
+      color: #6f7881;
+      font-size: 12px;
+    }
+
+    .segmented {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #e6e3df;
+      border-radius: 7px;
+      padding: 4px;
+    }
+
+    .segmented span {
+      min-width: 42px;
+      text-align: center;
+      border-radius: 5px;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .segmented button {
+      min-width: 42px;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: inherit;
+    }
+
+    .segmented .active,
+    .segmented button.active {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .legend {
+      display: flex;
+      gap: 18px;
+      color: #67717b;
+      font-size: 10px;
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+      background: currentColor;
+    }
+
+    .chart-svg {
+      width: 100%;
+      height: 250px;
+      display: block;
+      overflow: visible;
+    }
+
+    .feature-table {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      margin-bottom: 28px;
+    }
+
+    .feature-table th {
+      background: var(--table-head);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .feature-table td {
+      height: 54px;
+    }
+
+    .feature-foot {
+      padding: 11px 14px;
+      background: #e9e7e3;
+      color: #67717a;
+      font-size: 11px;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+
+    .quality-card {
+      min-height: 0;
+      padding: 26px 24px 30px;
+    }
+
+    .quality-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 22px 0;
+      margin: 26px 0 4px;
+    }
+
+    .quality-stat {
+      border-right: 1px solid var(--line);
+      min-height: 86px;
+      padding: 8px 20px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .quality-stat:last-child {
+      border-right: 0;
+    }
+
+    .quality-stat strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .quality-details {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: #20313a;
+      color: #fff;
+      border-radius: 8px;
+      padding: 12px 16px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .18);
+      transform: translateY(90px);
+      opacity: 0;
+      transition: .2s ease;
+      z-index: 20;
+      font-size: 14px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 1180px) {
+      .shell {
+        grid-template-columns: 240px minmax(0, 1fr);
+      }
+
+      .service-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .basic-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 880px) {
+      .shell {
+        display: block;
+        border-radius: 0;
+      }
+
+      .sidebar {
+        min-height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        margin-bottom: 18px;
+      }
+
+      .nav {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .sidebar-bottom {
+        display: none;
+      }
+
+      .main {
+        padding: 22px 16px 32px;
+      }
+
+      .toolbar,
+      .filters,
+      .report-bar,
+      .report-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .tabs {
+        overflow-x: auto;
+      }
+
+      .section-title-row,
+      .sort-controls {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .sort-controls select,
+      .sort-direction {
+        width: 100%;
+      }
+
+      .search-group,
+      .search {
+        width: 100%;
+      }
+
+      .charts,
+      .bottom-grid,
+      .metrics,
+      .basic-grid,
+      .service-grid {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        min-width: 760px;
+      }
+
+      .model-group,
+      .critical,
+      .feature-table {
+        overflow-x: auto;
+      }
+
+      .group-head {
+        grid-template-columns: 1fr 34px;
+        align-items: start;
+      }
+
+      .group-toggle {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+      }
+
+      .site-stats {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-width: 0;
+        width: 100%;
+      }
+
+      .report-bar {
+        margin: -22px -16px 20px;
+      }
+
+      .quality-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px 0;
+      }
+
+      .quality-stat:nth-child(even) {
+        border-right: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">▣</div>
+        <div>
+          <h1>AIoTers DevOps</h1>
+          <p>維運主控台</p>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="主導覽">
+        <button class="nav-item" type="button"><span class="nav-icon">▦</span><span>總覽</span></button>
+        <button class="nav-item" type="button"><span class="nav-icon">⌁</span><span>設備</span></button>
+        <button class="nav-item active" type="button"><span class="nav-icon">▣</span><span>模型</span></button>
+        <button class="nav-item" type="button"><span class="nav-icon">△</span><span>告警</span></button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="nav-item" type="button"><span class="nav-icon">⚙</span><span>設定</span></button>
+        <button class="nav-item" type="button"><span class="nav-icon">?</span><span>支援</span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section id="overviewView">
+        <div class="toolbar">
+          <div class="title">
+            <h2>模型管理</h2>
+            <p>集中檢視所有 Site 的模型運行狀態、評測結果與漂移風險。</p>
+          </div>
+        </div>
+
+        <div class="filters">
+          <div class="tabs" id="kindTabs" role="tablist" aria-label="模型類型篩選"></div>
+          <div class="search-group">
+            <label class="search" aria-label="搜尋 model id">
+              <span>⌕</span>
+              <input id="searchInput" type="search" placeholder="搜尋 model_id" autocomplete="off">
+            </label>
+            <div class="summary-count">
+              總數 <strong id="totalCount">12</strong>
+              <span class="ok-text">Normal 7</span>
+              <span class="warn-text">Warning 3</span>
+              <span class="bad-text">Critical 2</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title-row">
+          <h3 class="section-title">依 Site 分組的模型清單</h3>
+          <div class="sort-controls">
+            <label for="sortSelect">依照</label>
+            <select id="sortSelect" aria-label="選擇模型排序欄位">
+              <option value="modelId">Model ID</option>
+              <option value="kind">Kind</option>
+              <option value="status">Status</option>
+              <option value="metric">主要指標</option>
+              <option value="skill">Skill / 比較</option>
+              <option value="drift">Drift</option>
+              <option value="lastEval">最後評測</option>
+            </select>
+            <button class="sort-direction" id="sortDirectionButton" type="button" aria-label="切換排序方向">↑</button>
+          </div>
+        </div>
+        <div id="modelGroups"></div>
+
+        <section class="critical">
+          <div class="critical-head">
+            <div class="critical-title"><span>△</span><span>嚴重模型</span></div>
+            <div class="small-code mono">Last updated: 14:45</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Model ID</th>
+                <th>Site</th>
+                <th>異常數值</th>
+                <th>影響測點</th>
+                <th>持續時間</th>
+                <th>Severity</th>
+              </tr>
+            </thead>
+            <tbody id="criticalRows"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <section id="detailView" class="detail-view hidden" aria-live="polite">
+        <div class="report-bar">
+          <button class="btn ghost" id="backButton" type="button">← 模型管理</button>
+          <div class="report-title">模型詳細報告</div>
+          <div class="report-actions">
+            <span>頁面更新時間: <span id="detailUpdated">2024-07-15 14:08:00</span></span>
+            <button class="btn primary" id="exportButton" type="button">⇩ 輸出報告</button>
+          </div>
+        </div>
+
+        <div class="select-row">
+          <label for="modelSelect">切換模型</label>
+          <select id="modelSelect"></select>
+        </div>
+
+        <h3 class="detail-subtitle">模型基本資料</h3>
+        <div class="detail-panel">
+          <div class="basic-grid" id="basicGrid"></div>
+        </div>
+
+        <section class="service-info">
+          <div class="service-title">服務資訊</div>
+          <div class="service-grid" id="serviceGrid"></div>
+        </section>
+
+        <div class="metrics" id="metricCards"></div>
+        <section class="secondary-metric-section hidden" id="secondaryMetricSection">
+          <h3 class="secondary-metric-title">標註資料評測 <span class="count-chip" id="labeledRowsBadge"></span></h3>
+          <div class="secondary-metrics" id="secondaryMetricCards"></div>
+        </section>
+
+        <div class="charts">
+          <section class="chart-card">
+            <div class="chart-head">
+              <div>
+                <h4 class="chart-title" id="trendChartTitle">MAE / MAPE / Skill Score 趨勢</h4>
+                <p class="chart-subtitle" id="trendChartSubtitle">評測期間：2024-07-01 ~ 2024-07-15</p>
+              </div>
+              <div class="segmented" id="trendSegments" aria-label="指標切換">
+                <span>MAE</span>
+                <span class="active">MAPE</span>
+                <span>skill_score</span>
+              </div>
+            </div>
+            <svg id="barChart" class="chart-svg" viewBox="0 0 520 250" role="img" aria-label="MAPE 趨勢長條圖"></svg>
+          </section>
+
+          <section class="chart-card">
+            <div class="chart-head">
+              <div>
+                <h4 class="chart-title" id="comparisonChartTitle">Actual vs Prediction vs<br>Baseline</h4>
+                <p class="chart-subtitle" id="lineSubtitle">chiller_power_kw</p>
+              </div>
+              <div class="legend" id="lineLegend">
+                <span style="color:#17637c">Actual (實際值)</span>
+                <span style="color:#f14343">Prediction (預測值)</span>
+                <span style="color:#727b83">Baseline (基準預測)</span>
+              </div>
+            </div>
+            <svg id="lineChart" class="chart-svg" viewBox="0 0 520 250" role="img" aria-label="實際值、預測值、基準預測折線圖"></svg>
+          </section>
+        </div>
+
+        <h3 class="detail-subtitle">輸入特徵漂移監測</h3>
+        <div class="feature-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Feature Name</th>
+                <th>PSI</th>
+                <th>KS P-value</th>
+                <th>Importance</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="featureRows"></tbody>
+          </table>
+          <div class="feature-foot">PSI：&lt; 0.10 Normal，0.10～0.25 Warning，&gt; 0.25 Critical。KS p-value：&gt;= 0.05 無顯著差異，&lt; 0.05 有顯著差異。</div>
+        </div>
+
+        <div class="bottom-grid">
+          <section class="quality-card">
+            <h3 class="detail-subtitle" id="qualityTitle">評測資料品質</h3>
+            <div class="quality-row" id="qualityStats"></div>
+            <div class="quality-details" id="qualityDetails"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const sites = [
+      { id: "site_tpe_chw_01", name: "台北冰水主機房", health: "良好", level: "ok", stats: { normal: 3, warning: 1, critical: 0 } },
+      { id: "site_txg_hvac_02", name: "台中空調機房", health: "警告", level: "warn", stats: { normal: 2, warning: 1, critical: 1 } },
+      { id: "site_khh_energy_03", name: "高雄能源中心", health: "嚴重", level: "bad", stats: { normal: 2, warning: 1, critical: 1 } }
+    ];
+
+    const models = [
+      {
+        id: "predict.chiller_power_01",
+        shortId: "predict.chiller_powe...",
+        kind: "forecast",
+        type: "forecast / XGBoost Regressor",
+        siteId: "site_txg_hvac_02",
+        status: "Critical",
+        statusText: "Critical",
+        target: "plant.chiller_power_kw",
+        version: "v3.2.1",
+        mainMetric: "31.5% (MAPE)",
+        skill: "-6.4%",
+        drift: "嚴重",
+        lastEval: "07-15 14:08",
+        updated: "2024-07-15 14:08:00",
+        metrics: [
+          { label: "MAPE", value: "31.5%", delta: "↑ 8.6%", tone: "bad", note: "較上次評測" },
+          { label: "Baseline MAPE", value: "17.6%", delta: "↑ 2.4%", tone: "warn", note: "較上次評測" },
+          { label: "Skill Score", value: "-6.4%", delta: "↓ 5.1%", tone: "bad", note: "較上次評測" },
+          { label: "評測覆蓋率", value: "94.1%", delta: "↓ 1.0%", tone: "warn", note: "較上次評測" },
+          { label: "最近 7 天趨勢 (MAPE)", value: "+7.8%", tone: "bad", mini: true }
+        ],
+        bars: [78, 82, 74, 88, 85, 79, 94, 98, 108, 102, 118, 123, 137, 141],
+        line: {
+          actual: [470, 490, 445, 520, 585, 640, 700, 760, 850, 790, 750],
+          prediction: [210, 230, 185, 270, 210, 260, 310, 360, 470, 410, 350],
+          baseline: [340, 365, 310, 400, 440, 485, 540, 620, 665, 575, 520]
+        },
+        features: [
+          ["chiller_power_kw", "0.486", "0.004", "0.338", "Critical"],
+          ["supply_air_temp", "0.245", "0.041", "0.224", "Warning"],
+          ["outdoor_temp", "0.092", "0.188", "0.182", "Normal"],
+          ["occupancy_rate", "0.118", "0.262", "0.126", "Normal"],
+          ["chilled_water_flow", "0.302", "0.019", "0.158", "Critical"]
+        ],
+        quality: {
+          stats: [["PREDICTION_COUNT", "18,420"], ["ACTUAL_COUNT", "18,001"], ["JOINED_ROWS", "16,972"], ["EXCLUDED_ROWS", "1,029"]],
+          coverage: "94.1%"
+        }
+      },
+      {
+        id: "predict.chilled_water_01",
+        kind: "forecast",
+        type: "forecast / LightGBM",
+        siteId: "site_tpe_chw_01",
+        status: "Active",
+        statusText: "Active",
+        target: "plant.chw_supply_temp",
+        version: "v2.8.4",
+        mainMetric: "12.4% (MAPE)",
+        skill: "+38.3%",
+        drift: "正常",
+        lastEval: "07-15 14:30",
+        updated: "2024-07-15 14:30:00"
+      },
+      {
+        id: "anomaly.chw_temp_01",
+        kind: "anomaly",
+        type: "anomaly / Isolation Forest",
+        siteId: "site_tpe_chw_01",
+        status: "Warning",
+        statusText: "Warning",
+        target: "plant.chw_temp_delta",
+        version: "v1.9.0",
+        mainMetric: "48 events",
+        skill: "異常率 3.2%",
+        drift: "警告",
+        lastEval: "07-15 14:25",
+        updated: "2024-07-15 14:25:00"
+      },
+      {
+        id: "recommender.setpoint_01",
+        kind: "recommender",
+        type: "recommender / Policy Ranker",
+        siteId: "site_tpe_chw_01",
+        status: "Active",
+        statusText: "Active",
+        target: "plant.chw_setpoint",
+        version: "v1.4.7",
+        mainMetric: "97.2%",
+        skill: "採用率 68.7%",
+        drift: "正常",
+        lastEval: "07-15 14:20",
+        updated: "2024-07-15 14:20:00"
+      },
+      {
+        id: "anomaly.ct_water_temp_01",
+        kind: "anomaly",
+        type: "anomaly / AutoEncoder",
+        siteId: "site_khh_energy_03",
+        status: "Critical",
+        statusText: "Critical",
+        target: "tower.ct_03.temp",
+        version: "v2.1.6",
+        mainMetric: "126 events",
+        skill: "異常率 7.8%",
+        drift: "嚴重",
+        lastEval: "07-15 14:12",
+        updated: "2024-07-15 14:12:00"
+      },
+      {
+        id: "predict.energy_load_03",
+        kind: "forecast",
+        type: "forecast / XGBoost Regressor",
+        siteId: "site_khh_energy_03",
+        status: "Active",
+        statusText: "Active",
+        target: "meter.energy_load",
+        version: "v3.0.2",
+        mainMetric: "15.8% (MAPE)",
+        skill: "+12.3%",
+        drift: "正常",
+        lastEval: "07-15 14:10",
+        updated: "2024-07-15 14:10:00"
+      },
+      {
+        id: "recommender.cooling_plan_02",
+        kind: "recommender",
+        type: "recommender / Policy Ranker",
+        siteId: "site_txg_hvac_02",
+        status: "Active",
+        statusText: "Active",
+        target: "plant.cooling_schedule",
+        version: "v1.5.3",
+        mainMetric: "Run 1,284",
+        skill: "採用率 61.4%",
+        drift: "正常",
+        lastEval: "07-15 14:05",
+        updated: "2024-07-15 14:05:00"
+      }
+    ];
+
+    const criticalIssues = [
+      {
+        id: "predict.chiller_power_01",
+        site: "台中空調機房",
+        detail: "Skill Score -6.4% / Drift Critical",
+        asset: "plant.chiller_01.power",
+        duration: "已持續 3 天"
+      },
+      {
+        id: "anomaly.ct_water_temp_01",
+        site: "高雄能源中心",
+        detail: "Anomaly Events 126 / Anomaly Rate 7.8%",
+        asset: "tower.ct_03.temp",
+        duration: "已持續 1 天"
+      }
+    ];
+
+    const fallbackDetail = {
+        metrics: [
+          { label: "MAPE", value: "14.8%", delta: "↓ 1.2%", tone: "ok", note: "較上次評測" },
+          { label: "Baseline MAPE", value: "20.1%", delta: "↑ 0.8%", tone: "warn", note: "較上次評測" },
+          { label: "Skill Score", value: "+18.4%", delta: "↑ 2.3%", tone: "ok", note: "較上次評測" },
+          { label: "評測覆蓋率", value: "96.8%", delta: "↑ 0.6%", tone: "ok", note: "較上次評測" },
+          { label: "最近 7 天趨勢 (MAPE)", value: "-1.4%", tone: "ok", mini: true }
+        ],
+      bars: [68, 70, 66, 69, 71, 70, 67, 65, 66, 64, 63, 62, 61, 60],
+      line: {
+        actual: [410, 425, 415, 440, 458, 470, 486, 510, 535, 522, 548],
+        prediction: [398, 430, 405, 448, 452, 465, 492, 500, 528, 530, 541],
+        baseline: [360, 380, 372, 400, 420, 432, 450, 468, 486, 478, 492]
+      },
+      features: [
+        ["supply_temp", "0.104", "0.182", "0.268", "Normal"],
+        ["return_temp", "0.086", "0.210", "0.193", "Normal"],
+        ["flow_rate", "0.132", "0.078", "0.174", "Warning"],
+        ["outdoor_temp", "0.074", "0.244", "0.151", "Normal"]
+      ],
+      quality: {
+        stats: [["PREDICTION_COUNT", "12,880"], ["ACTUAL_COUNT", "12,764"], ["JOINED_ROWS", "12,502"], ["EXCLUDED_ROWS", "262"]],
+        coverage: "96.8%"
+      }
+    };
+
+    const state = {
+      kind: "all",
+      query: "",
+      selectedModelId: "predict.chiller_power_01",
+      collapsedSiteIds: new Set(sites.map((site) => site.id)),
+      sort: { key: "modelId", direction: "asc" },
+      trendMetric: "MAPE"
+    };
+
+    const siteById = new Map(sites.map((site) => [site.id, site]));
+    const modelById = new Map(models.map((model) => [model.id, model]));
+
+    const statusTone = (status) => {
+      if (status === "Critical" || status === "嚴重") return "bad";
+      if (status === "Warning" || status === "警告") return "warn";
+      return "ok";
+    };
+
+    const displayStatus = (status) => {
+      if (normalizeStatus(status) === "critical") return "Critical";
+      if (normalizeStatus(status) === "warning") return "Warning";
+      return "Normal";
+    };
+
+    const displayDrift = (drift) => displayStatus(drift);
+
+    const statusRank = (status) => {
+      if (status === "Critical" || status === "嚴重") return 3;
+      if (status === "Warning" || status === "警告") return 2;
+      return 1;
+    };
+
+    const normalizeStatus = (status) => {
+      if (status === "Critical" || status === "嚴重") return "critical";
+      if (status === "Warning" || status === "警告") return "warning";
+      return "normal";
+    };
+
+    const siteStatsFor = (siteId) => {
+      const siteModels = models.filter((model) => model.siteId === siteId);
+      const stats = siteModels.reduce((result, model) => {
+        result[normalizeStatus(model.status)] += 1;
+        return result;
+      }, { normal: 0, warning: 0, critical: 0 });
+      return { ...stats, total: stats.normal + stats.warning + stats.critical };
+    };
+
+    const overallCounts = () => models.reduce((result, model) => {
+      result[normalizeStatus(model.status)] += 1;
+      return result;
+    }, { normal: 0, warning: 0, critical: 0 });
+
+    const psiStatus = (psi) => {
+      const value = Number(psi);
+      if (value > 0.25) return "Critical";
+      if (value >= 0.10) return "Warning";
+      return "Normal";
+    };
+
+    const worstFeatureStatus = (features) => {
+      return features.reduce((worst, feature) => {
+        const status = psiStatus(feature[1]);
+        return statusRank(status) > statusRank(worst) ? status : worst;
+      }, "Normal");
+    };
+
+    const consecutiveTailAbove = (values, threshold) => {
+      let count = 0;
+      for (let index = values.length - 1; index >= 0; index -= 1) {
+        if (values[index] <= threshold) break;
+        count += 1;
+      }
+      return count;
+    };
+
+    const anomalyHealthStatus = (data) => {
+      const criticalThreshold = 0.90;
+      const consecutiveBreaches = consecutiveTailAbove(data.p99Series, data.threshold);
+      if (data.p99 >= criticalThreshold || consecutiveBreaches >= 7) return "Critical";
+      if (data.p99 > data.threshold) return "Warning";
+      return "Normal";
+    };
+
+    const skillScore = (mape, baselineMape) => `${((1 - mape / baselineMape) * 100).toFixed(1)}%`;
+
+    const numberFrom = (value) => {
+      const match = String(value).replace(/,/g, "").match(/-?\d+(\.\d+)?/);
+      return match ? Number(match[0]) : 0;
+    };
+
+    const sortValue = (model, key) => {
+      if (key === "modelId") return model.id;
+      if (key === "kind") return model.kind;
+      if (key === "status") return statusRank(model.status);
+      if (key === "metric") return numberFrom(primaryMetric(model));
+      if (key === "skill") return numberFrom(comparisonMetric(model));
+      if (key === "drift") return statusRank(model.drift);
+      if (key === "lastEval") return model.lastEval;
+      return model.id;
+    };
+
+    function primaryMetric(model) {
+      if (model.kind === "forecast") return model.mainMetric.replace(" (MAPE)", "");
+      if (model.kind === "anomaly") return model.id.includes("ct_water") ? "126 events" : "48 events";
+      if (model.kind === "recommender") return model.id.includes("cooling") ? "Run 1,284" : "Run 2,416";
+      return model.mainMetric;
+    }
+
+    function comparisonMetric(model) {
+      if (model.kind === "forecast") return model.id === "predict.chilled_water_01" ? `+${skillScore(12.4, 20.1)}` : model.skill;
+      if (model.kind === "anomaly") return model.id.includes("ct_water") ? "Anomaly Rate 7.8%" : "Anomaly Rate 3.2%";
+      if (model.kind === "recommender") return model.id.includes("cooling") ? "Adoption Rate 61.4%" : "Adoption Rate 68.7%";
+      return model.skill;
+    }
+
+    function sortedModels(sourceModels) {
+      const direction = state.sort.direction === "asc" ? 1 : -1;
+      return [...sourceModels].sort((a, b) => {
+        const valueA = sortValue(a, state.sort.key);
+        const valueB = sortValue(b, state.sort.key);
+        if (typeof valueA === "number" && typeof valueB === "number") {
+          return (valueA - valueB) * direction || a.id.localeCompare(b.id);
+        }
+        return String(valueA).localeCompare(String(valueB), "zh-Hant") * direction || a.id.localeCompare(b.id);
+      });
+    }
+
+    function detailOf(model) {
+      const isCritical = normalizeStatus(model.status) === "critical";
+      const isWarning = normalizeStatus(model.status) === "warning";
+      const site = siteById.get(model.siteId);
+      const period = "2024-07-01 ~ 2024-07-15";
+      const quality = model.quality || {
+        stats: [["PREDICTION_COUNT", "12,880"], ["ACTUAL_COUNT", "12,764"], ["JOINED_ROWS", "12,502"], ["EXCLUDED_ROWS", "262"]]
+      };
+      const features = model.features || fallbackDetail.features;
+      const effectiveStatus = model.kind === "anomaly" ? displayStatus(model.status) : worstFeatureStatus(features);
+      const effectiveTone = statusTone(effectiveStatus);
+      const base = {
+        ...model,
+        healthStatus: effectiveStatus,
+        healthTone: effectiveTone,
+        siteName: site.name,
+        siteCode: site.id,
+        evaluatedAt: model.updated,
+        period,
+        ops: {
+          online: isCritical ? "Offline" : "Online",
+          lastSuccess: isCritical ? "2024-07-15 13:42:10" : model.updated,
+          successRate: isCritical ? "91.2%" : isWarning ? "96.4%" : "99.1%",
+          errorRate: isCritical ? "8.8%" : isWarning ? "3.6%" : "0.9%",
+          p95Latency: isCritical ? "840 ms" : isWarning ? "430 ms" : "180 ms",
+          deployedAt: model.kind === "recommender" ? "2024-07-10 09:20:00" : "2024-07-08 10:30:00"
+        },
+        statuses: {
+          service: isCritical ? "Critical" : "Normal",
+          performance: isCritical ? "Critical" : isWarning ? "Warning" : "Normal",
+          drift: displayDrift(model.drift),
+          data: isCritical ? "Warning" : "Normal",
+          overall: displayStatus(model.status)
+        },
+        features,
+        quality
+      };
+
+      if (model.kind === "anomaly") {
+        const anomalyData = model.id.includes("ct_water")
+          ? {
+              events: 126,
+              scoredRows: 1662,
+              validRows: 1615,
+              excludedRows: 47,
+              p95: 0.86,
+              p99: 0.94,
+              threshold: 0.70,
+              eventSeries: [36, 42, 45, 51, 58, 67, 72, 80, 91, 98, 108, 116, 122, 126],
+              p95Series: [0.42, 0.46, 0.49, 0.52, 0.57, 0.62, 0.66, 0.70, 0.75, 0.79, 0.82, 0.84, 0.85, 0.86],
+              p99Series: [0.58, 0.61, 0.64, 0.67, 0.71, 0.75, 0.78, 0.82, 0.86, 0.89, 0.91, 0.92, 0.93, 0.94],
+              precision: null,
+              recall: null,
+              f1: null,
+              labeledRows: null
+            }
+          : {
+              events: 48,
+              scoredRows: 1534,
+              validRows: 1500,
+              excludedRows: 34,
+              p95: 0.66,
+              p99: 0.78,
+              threshold: 0.70,
+              eventSeries: [14, 18, 17, 21, 24, 26, 28, 31, 35, 38, 41, 44, 46, 48],
+              p95Series: [0.34, 0.37, 0.36, 0.40, 0.43, 0.45, 0.48, 0.51, 0.54, 0.58, 0.61, 0.63, 0.65, 0.66],
+              p99Series: [0.48, 0.51, 0.50, 0.55, 0.58, 0.60, 0.63, 0.66, 0.69, 0.72, 0.75, 0.76, 0.77, 0.78],
+              precision: "92.4%",
+              recall: "88.1%",
+              f1: "90.2%",
+              labeledRows: 1460
+            };
+        const anomalyRate = anomalyData.events / anomalyData.validRows;
+        const anomalyRateSeries = anomalyData.eventSeries.map((events) => Number((events / anomalyData.validRows * 100).toFixed(1)));
+        const hasLabels = Number(anomalyData.labeledRows) > 0;
+        const healthStatus = anomalyHealthStatus(anomalyData);
+        const healthTone = statusTone(healthStatus);
+        const labelMetricTooltip = hasLabels ? `使用 Labeled Rows = ${anomalyData.labeledRows.toLocaleString()} 計算` : "";
+        return {
+          ...base,
+          healthStatus,
+          healthTone,
+          healthRule: "判定規則：P99 > Threshold 為 Warning；P99 >= 0.90 或連續 7 次超標為 Critical。異常率分母使用 Valid Rows。",
+          metrics: [
+            { label: "異常事件數", value: anomalyData.events.toLocaleString(), tone: healthTone },
+            { label: "異常率", value: percent(anomalyRate), tone: healthTone },
+            { label: "Score P99", value: anomalyData.p99.toFixed(2), tone: healthTone },
+            { label: "Threshold", value: anomalyData.threshold.toFixed(2), tone: "ok" },
+            { label: "評測覆蓋率", value: percent(anomalyData.validRows / anomalyData.scoredRows), tone: healthStatus === "Critical" ? "warn" : "ok" }
+          ],
+          labeledRows: hasLabels ? anomalyData.labeledRows : 0,
+          secondaryMetrics: hasLabels ? [
+            { label: "Precision", value: anomalyData.precision, tone: "ok", tooltip: labelMetricTooltip },
+            { label: "Recall", value: anomalyData.recall, tone: "ok", tooltip: labelMetricTooltip },
+            { label: "F1-score", value: anomalyData.f1, tone: "ok", tooltip: labelMetricTooltip }
+          ] : [],
+          trendSeries: {
+            "異常數量": anomalyData.eventSeries,
+            "異常率": anomalyRateSeries,
+            "異常分數": anomalyData.p99Series
+          },
+          line: {
+            actual: anomalyData.p95Series,
+            prediction: anomalyData.p99Series,
+            baseline: anomalyData.p99Series.map(() => anomalyData.threshold)
+          },
+          quality: {
+            stats: [
+              ["SCORED_ROWS", anomalyData.scoredRows.toLocaleString()],
+              ["VALID_ROWS", anomalyData.validRows.toLocaleString()],
+              ["EXCLUDED_ROWS", anomalyData.excludedRows.toLocaleString()],
+              ...(hasLabels ? [["LABELED_ROWS", anomalyData.labeledRows.toLocaleString()]] : [])
+            ],
+            coverage: percent(anomalyData.validRows / anomalyData.scoredRows)
+          },
+          chart: {
+            trendTitle: "異常指標趨勢",
+            trendSubtitle: `評測期間：${period}`,
+            segments: ["異常數量", "異常率", "異常分數"],
+            comparisonTitle: "異常分數趨勢",
+            comparisonSubtitle: "分數 0-1",
+            legend: ["P95 Score", "P99 Score", "Threshold"]
+          }
+        };
+      }
+
+      if (model.kind === "recommender") {
+        const runData = model.id.includes("cooling")
+          ? {
+              totalRuns: 1284,
+              successfulRuns: 1256,
+              failedRuns: 28,
+              guardrailBlockedRuns: 59,
+              adoptableRuns: 1225,
+              adoptedRuns: 752,
+              p95Latency: "240",
+              scope: "3 output points",
+              scopePoints: ["plant.cooling_schedule", "plant.chw_supply_setpoint", "plant.chiller_sequence"],
+              successSeries: [92.6, 93.1, 93.8, 94.6, 95.2, 96.0, 96.4, 96.9, 97.2, 97.5, 97.6, 97.7, 97.8, 97.8],
+              adoptionSeries: [50.4, 51.8, 52.9, 54.2, 55.1, 56.4, 57.5, 58.3, 58.9, 59.1, 59.5, 59.8, 60.2, 58.6],
+              guardrailSeries: [6.4, 6.0, 5.8, 5.4, 5.2, 5.1, 4.9, 4.8, 4.7, 4.7, 4.6, 4.6, 4.6, 4.6],
+              latencySeries: [205, 212, 218, 225, 220, 232, 236, 241, 246, 250, 244, 242, 241, 240]
+            }
+          : {
+              totalRuns: 2416,
+              successfulRuns: 2397,
+              failedRuns: 19,
+              guardrailBlockedRuns: 75,
+              adoptableRuns: 2341,
+              adoptedRuns: 1608,
+              p95Latency: "190",
+              scope: "plant.chw_setpoint",
+              scopePoints: ["plant.chw_setpoint"],
+              successSeries: [97.4, 97.8, 98.1, 98.4, 98.6, 98.8, 99.0, 99.1, 99.1, 99.2, 99.2, 99.2, 99.2, 99.2],
+              adoptionSeries: [59.2, 60.1, 60.8, 61.4, 62.1, 62.8, 63.5, 64.1, 64.7, 65.1, 65.5, 65.9, 66.3, 66.6],
+              guardrailSeries: [4.8, 4.5, 4.3, 4.0, 3.8, 3.7, 3.5, 3.4, 3.3, 3.2, 3.2, 3.1, 3.1, 3.1],
+              latencySeries: [168, 172, 176, 181, 178, 184, 187, 190, 194, 196, 193, 191, 190, 190]
+            };
+        const successRate = runData.successfulRuns / runData.totalRuns;
+        const adoptionRate = runData.adoptedRuns / runData.totalRuns;
+        const guardrailRate = runData.guardrailBlockedRuns / runData.totalRuns;
+        return {
+          ...base,
+          targetScope: runData.scope,
+          targetScopePoints: runData.scopePoints,
+          healthRule: "Health Status 包含輸入特徵漂移狀態，取最嚴重特徵狀態；服務正常但任一特徵為 Warning 時，整體維持 Warning。",
+          metrics: [
+            { label: "執行成功率", value: percent(successRate), tone: "ok", tooltip: `Successful Runs ÷ Total Runs = ${runData.successfulRuns.toLocaleString()} ÷ ${runData.totalRuns.toLocaleString()}` },
+            { label: "採用率", value: percent(adoptionRate), tone: "ok", tooltip: `Adopted Runs ÷ Total Runs = ${runData.adoptedRuns.toLocaleString()} ÷ ${runData.totalRuns.toLocaleString()}` },
+            { label: "Guardrail 攔截率", value: percent(guardrailRate), tone: "warn", tooltip: `Guardrail Blocked Runs ÷ Total Runs = ${runData.guardrailBlockedRuns.toLocaleString()} ÷ ${runData.totalRuns.toLocaleString()}。Guardrail 攔截代表成功完成但未輸出，不計入 Failed Runs。` },
+            { label: "P95 Latency", value: runData.p95Latency, tone: "ok" }
+          ],
+          trendSeries: {
+            "成功率": runData.successSeries,
+            "採用率": runData.adoptionSeries,
+            "Guardrail 攔截率": runData.guardrailSeries
+          },
+          line: {
+            actual: runData.latencySeries
+          },
+          quality: {
+            stats: [
+              ["TOTAL_RUNS", runData.totalRuns.toLocaleString()],
+              ["SUCCESSFUL_RUNS", runData.successfulRuns.toLocaleString()],
+              ["FAILED_RUNS", runData.failedRuns.toLocaleString()],
+              ["GUARDRAIL_BLOCKED_RUNS", runData.guardrailBlockedRuns.toLocaleString()],
+              ["ADOPTED_RUNS", runData.adoptedRuns.toLocaleString()]
+            ]
+          },
+          chart: {
+            trendTitle: "推薦指標趨勢",
+            trendSubtitle: `統計期間：${period}`,
+            segments: ["成功率", "採用率", "Guardrail 攔截率"],
+            comparisonTitle: "P95 Latency 趨勢",
+            comparisonSubtitle: "P95 Latency",
+            legend: ["P95 Latency"],
+            periodLabel: "統計期間"
+          }
+        };
+      }
+
+      return {
+        ...base,
+        metrics: [
+          { label: "MAE", value: isCritical ? "84.2 kW" : "18.6 kW", tone: isCritical ? "bad" : "ok" },
+          { label: "MAPE", value: isCritical ? "31.5%" : model.mainMetric.replace(" (MAPE)", ""), tone: isCritical ? "bad" : "ok" },
+          { label: "Baseline MAPE", value: isCritical ? "17.6%" : "20.1%", tone: isCritical ? "warn" : "ok" },
+          { label: "Skill Score", value: isCritical ? "-6.4%" : `+${skillScore(12.4, 20.1)}`, tone: isCritical ? "bad" : "ok" },
+          { label: "評測覆蓋率", value: isCritical ? "92.1%" : "97.1%", tone: isCritical ? "warn" : "ok" }
+        ],
+        bars: model.bars || fallbackDetail.bars,
+        trendSeries: {
+          MAPE: model.bars || fallbackDetail.bars,
+          MAE: isCritical ? [42, 45, 44, 49, 52, 58, 63, 66, 72, 75, 79, 82, 86, 90] : [18, 17, 19, 16, 15, 17, 16, 15, 14, 15, 13, 14, 12, 13],
+          "Skill Score": isCritical ? [24, 21, 19, 17, 13, 10, 8, 4, 2, -1, -3, -4, -5, -6] : [12, 14, 15, 16, 17, 18, 19, 18, 20, 21, 20, 22, 21, 23]
+        },
+        line: model.line || fallbackDetail.line,
+        chart: {
+          trendTitle: "MAE / MAPE / Skill Score 趨勢",
+          trendSubtitle: `評測期間：${period}，單位：${model.target.includes("temp") ? "°C" : "kW"}`,
+          segments: ["MAE", "MAPE", "Skill Score"],
+          comparisonTitle: "Actual vs Prediction vs Baseline",
+          comparisonSubtitle: `${model.target}，單位：${model.target.includes("temp") ? "°C" : "kW"}`,
+          legend: ["Actual (實際值)", "Prediction (預測值)", "Baseline (基準預測)"]
+        }
+      };
+    }
+
+    function renderTabs() {
+      const tabs = [
+        ["all", "全部"],
+        ["forecast", "forecast"],
+        ["anomaly", "anomaly"],
+        ["recommender", "recommender"]
+      ];
+      document.getElementById("kindTabs").innerHTML = tabs.map(([key, label]) => (
+        `<button class="tab ${state.kind === key ? "active" : ""}" type="button" data-kind="${key}">${label}</button>`
+      )).join("");
+    }
+
+    function renderOverallCounts() {
+      const counts = overallCounts();
+      document.getElementById("totalCount").textContent = counts.normal + counts.warning + counts.critical;
+      const summary = document.querySelector(".summary-count");
+      summary.innerHTML = `
+        總數 <strong id="totalCount">${counts.normal + counts.warning + counts.critical}</strong>
+        <span class="ok-text">Normal ${counts.normal}</span>
+        <span class="warn-text">Warning ${counts.warning}</span>
+        <span class="bad-text">Critical ${counts.critical}</span>
+      `;
+    }
+
+
+    function visibleModels() {
+      return models.filter((model) => {
+        const matchesKind = state.kind === "all" || model.kind === state.kind;
+        const matchesQuery = model.id.toLowerCase().includes(state.query.toLowerCase());
+        return matchesKind && matchesQuery;
+      });
+    }
+
+    function renderKindBlocks(siteModels) {
+      const kindLabels = {
+        forecast: "Forecast",
+        anomaly: "Anomaly",
+        recommender: "Recommender"
+      };
+      const kindIcons = {
+        forecast: "ƒ",
+        anomaly: "!",
+        recommender: "★"
+      };
+      const kindDescriptions = {
+        forecast: "prediction accuracy",
+        anomaly: "event detection",
+        recommender: "operation recommendation"
+      };
+      const metricValue = (model, metric) => {
+        const critical = normalizeStatus(model.status) === "critical";
+        const warning = normalizeStatus(model.status) === "warning";
+        const cooling = model.id.includes("cooling");
+        if (metric === "mape") return model.mainMetric.replace(" (MAPE)", "");
+        if (metric === "skillScore") return model.skill;
+        if (metric === "drift") return displayDrift(model.drift);
+        if (metric === "events") return model.id.includes("ct_water") ? "126 events" : "48 events";
+        if (metric === "anomalyRate") return model.id.includes("ct_water") ? "7.8%" : "3.2%";
+        if (metric === "scoreP99") return critical ? "0.94" : warning ? "0.78" : "0.42";
+        if (metric === "successRate") return cooling ? "97.8%" : "99.2%";
+        if (metric === "guardrailRate") return cooling ? "4.6%" : "3.1%";
+        if (metric === "p95Latency") return cooling ? "240 ms" : "190 ms";
+        if (metric === "scope") return cooling ? "3 output points" : "plant.chw_setpoint";
+        return "";
+      };
+      const metricTone = (model, metric) => {
+        if (metric === "drift") return statusTone(model.drift);
+        if (metric === "mape" || metric === "events" || metric === "anomalyRate" || metric === "scoreP99") return statusTone(model.status);
+        if (metric === "skillScore") return model.skill.includes("-") ? "bad" : "ok";
+        return "ok";
+      };
+      const kindColumns = {
+        forecast: [
+          ["Model ID", (model) => `<span class="mono">${model.id}</span>`],
+          ["Target Point", (model) => `<span class="mono">${model.target}</span>`],
+          ["Health Status", (model) => `<span class="${statusTone(model.status)}-text">${displayStatus(model.status)}</span>`],
+          ["MAPE", (model) => metricValue(model, "mape")],
+          ["Skill Score", (model) => `<span class="${metricTone(model, "skillScore")}-text">${metricValue(model, "skillScore")}</span>`],
+          ["Drift", (model) => `<span class="${metricTone(model, "drift")}-text">${metricValue(model, "drift")}</span>`],
+          ["Last Evaluated", (model) => model.lastEval]
+        ],
+        anomaly: [
+          ["Model ID", (model) => `<span class="mono">${model.id}</span>`],
+          ["Target Point", (model) => `<span class="mono">${model.target}</span>`],
+          ["Health Status", (model) => `<span class="${statusTone(model.status)}-text">${displayStatus(model.status)}</span>`],
+          ["Events", (model) => metricValue(model, "events")],
+          ["Anomaly Rate", (model) => `<span class="${metricTone(model, "anomalyRate")}-text">${metricValue(model, "anomalyRate")}</span>`],
+          ["Score P99", (model) => `<span class="${metricTone(model, "scoreP99")}-text">${metricValue(model, "scoreP99")}</span>`],
+          ["Last Evaluated", (model) => model.lastEval]
+        ],
+        recommender: [
+          ["Model ID", (model) => `<span class="mono">${model.id}</span>`],
+          ["Target / Scope", (model) => `<span class="mono">${metricValue(model, "scope")}</span>`],
+          ["Health Status", (model) => `<span class="${statusTone(model.status)}-text">${displayStatus(model.status)}</span>`],
+          ["Success Rate", (model) => `<span class="${metricTone(model, "successRate")}-text">${metricValue(model, "successRate")}</span>`],
+          ["P95 Latency", (model) => metricValue(model, "p95Latency")],
+          ["Guardrail Rate", (model) => `<span class="${metricTone(model, "guardrailRate")}-text">${metricValue(model, "guardrailRate")}</span>`],
+          ["Last Evaluated", (model) => model.lastEval]
+        ]
+      };
+
+      return ["forecast", "anomaly", "recommender"].map((kind) => {
+        const kindModels = siteModels.filter((model) => model.kind === kind);
+        if (!kindModels.length) return "";
+        const columns = kindColumns[kind];
+        const widthMap = {
+          forecast: ["21%", "22%", "12%", "10%", "13%", "11%", "11%"],
+          anomaly: ["21%", "22%", "12%", "11%", "13%", "10%", "11%"],
+          recommender: ["21%", "26%", "12%", "12%", "11%", "11%", "7%"]
+        };
+        const widths = widthMap[kind];
+
+        return `
+          <div class="kind-block ${kind}">
+            <div class="kind-head">
+              <div class="kind-head-main">
+                <span class="kind-icon">${kindIcons[kind]}</span>
+                <span>${kindLabels[kind]}</span>
+                <span class="kind-count">${kindModels.length} models</span>
+              </div>
+              <span class="kind-desc">${kindDescriptions[kind]}</span>
+            </div>
+            <div class="model-table-wrap">
+              <table class="model-table">
+                <colgroup>
+                  ${widths.map((width) => `<col style="width: ${width}">`).join("")}
+                </colgroup>
+                <thead>
+                  <tr>
+                    ${columns.map(([label]) => `<th>${label}</th>`).join("")}
+                  </tr>
+                </thead>
+                <tbody>
+                  ${kindModels.map((model) => `
+                    <tr class="clickable" data-model-id="${model.id}">
+                      ${columns.map(([, cell]) => `<td>${cell(model)}</td>`).join("")}
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderModelGroups() {
+      const sortSelect = document.getElementById("sortSelect");
+      const sortDirectionButton = document.getElementById("sortDirectionButton");
+      if (sortSelect) sortSelect.value = state.sort.key;
+      if (sortDirectionButton) sortDirectionButton.textContent = state.sort.direction === "asc" ? "↑" : "↓";
+
+      const grouped = sites.map((site) => ({
+        site,
+        models: sortedModels(visibleModels().filter((model) => model.siteId === site.id))
+      })).filter((group) => group.models.length);
+
+      document.getElementById("modelGroups").innerHTML = grouped.length ? grouped.map(({ site, models: siteModels }) => {
+        const collapsed = state.collapsedSiteIds.has(site.id);
+        const siteStats = siteStatsFor(site.id);
+        const siteLevel = siteStats.critical ? "bad" : siteStats.warning ? "warn" : "ok";
+        const siteHealth = siteStats.critical ? "Critical" : siteStats.warning ? "Warning" : "Normal";
+        return `
+        <section class="model-group ${collapsed ? "collapsed" : ""}">
+          <div class="group-head">
+            <div class="group-summary">
+              <div class="group-title">
+                <span class="dot ${siteLevel}"></span>
+                <span>${site.name}</span>
+                <span class="count-chip">${siteStats.total} models</span>
+                <span class="badge ${siteLevel}">${siteHealth}</span>
+              </div>
+              <code class="group-site-id mono">${site.id}</code>
+            </div>
+            <div class="site-stats" aria-label="${site.name} 模型狀態統計">
+              <div class="site-stat"><span>Total</span><strong>${siteStats.total}</strong></div>
+              <div class="site-stat"><span>Normal</span><strong>${siteStats.normal}</strong></div>
+              <div class="site-stat"><span>Warning</span><strong>${siteStats.warning}</strong></div>
+              <div class="site-stat"><span>Critical</span><strong>${siteStats.critical}</strong></div>
+            </div>
+            <button class="group-toggle" type="button" data-toggle-site="${site.id}" aria-expanded="${!collapsed}" aria-label="${collapsed ? "展開" : "收起"} ${site.name}">
+              ${collapsed ? "⌄" : "⌃"}
+            </button>
+          </div>
+          ${collapsed ? "" : `
+            ${renderKindBlocks(siteModels)}
+          `}
+        </section>
+      `;
+      }).join("") : `<div class="model-group empty">沒有符合條件的模型。</div>`;
+    }
+
+    function renderCriticalRows() {
+      document.getElementById("criticalRows").innerHTML = criticalIssues.map((issue) => `
+        <tr class="clickable" data-model-id="${issue.id}">
+          <td><strong class="mono">${issue.id}</strong></td>
+          <td>${issue.site}</td>
+          <td class="bad-text">${issue.detail}</td>
+          <td class="mono">${issue.asset}</td>
+          <td>${issue.duration}</td>
+          <td><span class="badge bad">Critical</span></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderModelSelect(currentModel) {
+      const kindLabels = {
+        forecast: "Forecast",
+        anomaly: "Anomaly",
+        recommender: "Recommender"
+      };
+      const sameSiteModels = models.filter((model) => model.siteId === currentModel.siteId);
+      document.getElementById("modelSelect").innerHTML = ["forecast", "anomaly", "recommender"].map((kind) => {
+        const kindModels = sameSiteModels.filter((model) => model.kind === kind);
+        if (!kindModels.length) return "";
+        return `
+          <optgroup label="${kindLabels[kind]}">
+            ${kindModels.map((model) => `<option value="${model.id}" ${model.id === state.selectedModelId ? "selected" : ""}>${model.id}</option>`).join("")}
+          </optgroup>
+        `;
+      }).join("");
+    }
+
+    function renderBasic(model) {
+      const site = siteById.get(model.siteId);
+      const isRecommender = model.kind === "recommender";
+      const outputPoints = model.targetScopePoints || [];
+      const targetScope = isRecommender && outputPoints.length > 1
+        ? `<details class="scope-details"><summary>${model.targetScope}</summary><div class="scope-list">${outputPoints.map((point) => `<span class="mono">${point}</span>`).join("")}</div></details>`
+        : `<span class="mono">${model.targetScope || model.target}</span>`;
+      const cells = [
+        ["Model ID", model.shortId || model.id],
+        ["Model Kind", model.type],
+        ["Site", `${site.name}<br><span class="small-code mono">${site.id}</span>`],
+        [isRecommender ? "Target / Scope" : "Target Point", targetScope],
+        ["Model Version", model.version],
+        ["Health Status", `<span class="badge ${model.healthTone}" ${model.healthRule ? `title="${model.healthRule}"` : ""}>● ${model.healthStatus}</span>`],
+        [isRecommender ? "統計更新時間" : "Evaluated At", model.evaluatedAt],
+        [isRecommender ? "統計期間" : "評測期間", model.period]
+      ];
+      document.getElementById("basicGrid").innerHTML = cells.map(([label, value]) => `
+        <div>
+          <span class="label">${label}</span>
+          <span class="value">${value}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderServiceInfo(model) {
+      const cells = (model.kind === "recommender" ? [
+        ["服務是否在線", model.ops.online],
+        ["最近成功執行時間", model.ops.lastSuccess],
+        ["最近部署時間", model.ops.deployedAt]
+      ] : [
+        ["服務是否在線", model.ops.online],
+        ["最近成功執行時間", model.ops.lastSuccess],
+        ["執行成功率", model.ops.successRate],
+        ["執行錯誤率", model.ops.errorRate],
+        ["P95 LATENCY", model.ops.p95Latency],
+        ["最近部署時間", model.ops.deployedAt]
+      ]).filter(([, value]) => value);
+      const serviceInfo = document.querySelector(".service-info");
+      serviceInfo.classList.toggle("hidden", cells.length === 0);
+      document.getElementById("serviceGrid").innerHTML = cells.map(([label, value]) => `
+        <div>
+          <span class="label">${label}</span>
+          <span class="value">${value}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderMetrics(model) {
+      const metricHtml = (metric) => `
+        <article class="metric-card" ${metric.tooltip ? `title="${metric.tooltip}"` : ""}>
+          <h4>${metric.label}</h4>
+          <span class="metric-value ${metric.tone ? `${metric.tone}-text` : ""}">${metric.value}</span>
+          ${metric.mini ? `<svg viewBox="0 0 120 42" width="112" height="42" aria-hidden="true">
+            <polyline points="2,33 18,24 34,29 50,18 66,23 82,11 98,17 116,8" fill="none" stroke="#d71920" stroke-width="4"/>
+          </svg>` : `<span class="metric-note ${metric.tone ? `${metric.tone}-text` : ""}">${metric.delta || ""}</span> <span class="metric-note">${metric.note || ""}</span>`}
+        </article>
+      `;
+      const secondary = model.secondaryMetrics || [];
+      const secondarySection = document.getElementById("secondaryMetricSection");
+      const secondaryEl = document.getElementById("secondaryMetricCards");
+      const labeledRowsBadge = document.getElementById("labeledRowsBadge");
+      document.getElementById("metricCards").innerHTML = model.metrics.map(metricHtml).join("");
+      secondarySection.classList.toggle("hidden", secondary.length === 0);
+      labeledRowsBadge.textContent = model.labeledRows ? `Labeled Rows: ${model.labeledRows.toLocaleString()}` : "";
+      secondaryEl.innerHTML = secondary.map(metricHtml).join("");
+    }
+
+    function renderBarChart(values) {
+      const max = Math.max(...values);
+      const chartStart = 22;
+      const chartEnd = 498;
+      const gap = 9;
+      const width = Math.max(12, Math.min(28, (chartEnd - chartStart - gap * (values.length - 1)) / values.length));
+      const base = 220;
+      const bars = values.map((value, index) => {
+        const height = Math.round(value / max * 135);
+        const x = chartStart + index * (width + gap);
+        const y = base - height;
+        return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="2" fill="#bed0d9"></rect>`;
+      }).join("");
+      document.getElementById("barChart").innerHTML = `
+        ${bars}
+        <text x="20" y="244" font-size="10" fill="#69727b">07-01</text>
+        <text x="174" y="244" font-size="10" fill="#69727b">07-05</text>
+        <text x="328" y="244" font-size="10" fill="#69727b">07-10</text>
+        <text x="466" y="244" font-size="10" fill="#69727b">07-15</text>
+      `;
+    }
+
+    function renderTrendSegments(model, activeMetric) {
+      document.getElementById("trendSegments").innerHTML = model.chart.segments.map((segment) => (
+        `<button class="${segment === activeMetric ? "active" : ""}" type="button" data-trend-metric="${segment}">${segment}</button>`
+      )).join("");
+    }
+
+    function pathFrom(values, maxValue) {
+      const max = maxValue || Math.max(...values) || 1;
+      const min = 0;
+      const startX = 30;
+      const endX = 490;
+      const stepX = values.length > 1 ? (endX - startX) / (values.length - 1) : 0;
+      return values.map((value, index) => {
+        const x = startX + index * stepX;
+        const y = 215 - ((value - min) / (max - min) * 185);
+        return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      }).join(" ");
+    }
+
+    function renderLineChart(line) {
+      const series = [
+        { values: line.actual || [], color: "#17637c", width: 5, dash: "" },
+        { values: line.prediction || [], color: "#f14343", width: 5, dash: "" },
+        { values: line.baseline || [], color: "#727b83", width: 4, dash: "18 12" }
+      ].filter((item) => item.values.length);
+      const maxValue = Math.max(...series.flatMap((item) => item.values)) * 1.15 || 1;
+      const gridValues = [0, .25, .5, .75, 1].map((ratio) => Math.round(maxValue * ratio * 10) / 10);
+      const grid = gridValues.map((value, index) => {
+        const y = 215 - index * 46;
+        return `<text x="0" y="${y + 4}" font-size="10" fill="#69727b">${value.toLocaleString()}</text>`;
+      }).join("");
+      const paths = series.map((item) => `
+        <path d="${pathFrom(item.values, maxValue)}" fill="none" stroke="${item.color}" stroke-width="${item.width}" ${item.dash ? `stroke-dasharray="${item.dash}"` : ""} stroke-linejoin="round"></path>
+      `).join("");
+      document.getElementById("lineChart").innerHTML = `
+        ${grid}
+        ${paths}
+        <text x="26" y="242" font-size="10" fill="#69727b">07-01</text>
+        <text x="176" y="242" font-size="10" fill="#69727b">07-05</text>
+        <text x="328" y="242" font-size="10" fill="#69727b">07-10</text>
+        <text x="462" y="242" font-size="10" fill="#69727b">07-15</text>
+      `;
+    }
+
+    function renderFeatures(model) {
+      const sortedFeatures = [...model.features].sort((a, b) => statusRank(psiStatus(b[1])) - statusRank(psiStatus(a[1])));
+      document.getElementById("featureRows").innerHTML = sortedFeatures.map((feature) => {
+        const status = psiStatus(feature[1]);
+        const tone = statusTone(status);
+        return `
+          <tr>
+            <td class="mono">${feature[0]}</td>
+            <td class="mono">${feature[1]}</td>
+            <td class="mono">${feature[2]}</td>
+            <td class="mono">${feature[3]}</td>
+            <td><span class="${tone}-text">● ${status}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function qualityCounts(model) {
+      const entries = Object.fromEntries(model.quality.stats.map(([label, value]) => [label, numberFrom(value)]));
+      const predictionCount = entries.PREDICTION_COUNT || 0;
+      const actualCount = entries.ACTUAL_COUNT || 0;
+      const joinedRows = entries.JOINED_ROWS || 0;
+      const excludedRows = entries.EXCLUDED_ROWS || 0;
+      const scoredRows = entries.SCORED_ROWS || 0;
+      const validRows = entries.VALID_ROWS || 0;
+      const labeledRows = entries.LABELED_ROWS || 0;
+      const totalRuns = entries.TOTAL_RUNS || 0;
+      const successfulRuns = entries.SUCCESSFUL_RUNS || 0;
+      const failedRuns = entries.FAILED_RUNS || 0;
+      const guardrailBlockedRuns = entries.GUARDRAIL_BLOCKED_RUNS || 0;
+      const adoptedRuns = entries.ADOPTED_RUNS || 0;
+      return {
+        predictionCount,
+        actualCount,
+        joinedRows,
+        excludedRows,
+        scoredRows,
+        validRows,
+        labeledRows,
+        totalRuns,
+        successfulRuns,
+        failedRuns,
+        guardrailBlockedRuns,
+        adoptedRuns
+      };
+    }
+
+    function percent(value) {
+      return `${(value * 100).toFixed(1)}%`;
+    }
+
+    function renderQuality(model) {
+      const counts = qualityCounts(model);
+      document.getElementById("qualityTitle").textContent = model.kind === "recommender" ? "推薦執行統計" : "評測資料品質";
+      const qualityRows = model.kind === "anomaly" ? [
+            ["Scored Rows", counts.scoredRows.toLocaleString()],
+            ["Valid Rows", counts.validRows.toLocaleString()],
+            ["Excluded Rows", counts.excludedRows.toLocaleString()],
+            ...(counts.labeledRows ? [["Labeled Rows", counts.labeledRows.toLocaleString()]] : [])
+          ] : model.kind === "recommender" ? [
+            ["Total Runs", counts.totalRuns.toLocaleString()],
+            ["Successful Runs", counts.successfulRuns.toLocaleString(), "Successful Runs 包含 Guardrail Blocked Runs；攔截代表成功完成但未輸出。"],
+            ["Failed Runs", counts.failedRuns.toLocaleString(), "Failed Runs 不包含 Guardrail Blocked Runs；Successful Runs + Failed Runs = Total Runs。"],
+            ["Guardrail Blocked Runs", counts.guardrailBlockedRuns.toLocaleString(), "Guardrail Blocked Runs 是 Successful Runs 的子集合，不計入 Failed Runs。"],
+            ["Adopted Runs", counts.adoptedRuns.toLocaleString()]
+          ] : [
+            ["Prediction Count", counts.predictionCount.toLocaleString()],
+            ["Actual Count", counts.actualCount.toLocaleString()],
+            ["Joined Rows", counts.joinedRows.toLocaleString()],
+            ["Excluded Actual Rows", counts.excludedRows.toLocaleString()]
+          ];
+
+      document.getElementById("qualityStats").innerHTML = qualityRows.map(([label, value, title]) => `
+        <div class="quality-stat" ${title ? `title="${title}"` : ""}>
+          <span class="label">${label}</span>
+          <strong>${value}</strong>
+        </div>
+      `).join("");
+      document.getElementById("qualityDetails").innerHTML = "";
+    }
+
+    function renderDetail(id) {
+      state.selectedModelId = id;
+      const model = detailOf(modelById.get(id) || models[0]);
+      if (!model.chart.segments.includes(state.trendMetric)) {
+        state.trendMetric = model.kind === "forecast" ? "MAPE" : model.chart.segments[0];
+      }
+      document.getElementById("detailUpdated").textContent = model.updated;
+      document.getElementById("trendChartTitle").textContent = model.chart.trendTitle;
+      document.getElementById("trendChartSubtitle").textContent = model.chart.trendSubtitle;
+      renderTrendSegments(model, state.trendMetric);
+      document.getElementById("comparisonChartTitle").innerHTML = model.chart.comparisonTitle;
+      document.getElementById("lineSubtitle").textContent = model.chart.comparisonSubtitle;
+      document.getElementById("lineLegend").innerHTML = model.chart.legend.map((label, index) => {
+        const colors = ["#17637c", "#f14343", "#727b83"];
+        return `<span style="color:${colors[index]}">${label}</span>`;
+      }).join("");
+      renderModelSelect(model);
+      renderBasic(model);
+      renderServiceInfo(model);
+      renderMetrics(model);
+      renderBarChart(model.trendSeries?.[state.trendMetric] || model.bars);
+      renderLineChart(model.line);
+      renderFeatures(model);
+      renderQuality(model);
+    }
+
+    function showDetail(id) {
+      renderDetail(id);
+      document.getElementById("overviewView").classList.add("hidden");
+      document.getElementById("detailView").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showOverview() {
+      document.getElementById("detailView").classList.add("hidden");
+      document.getElementById("overviewView").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function renderOverview() {
+      renderTabs();
+      renderOverallCounts();
+      renderModelGroups();
+      renderCriticalRows();
+    }
+
+    document.addEventListener("click", (event) => {
+      const tab = event.target.closest("[data-kind]");
+      const toggle = event.target.closest("[data-toggle-site]");
+      const trendButton = event.target.closest("[data-trend-metric]");
+      const row = event.target.closest("[data-model-id]");
+      if (tab) {
+        state.kind = tab.dataset.kind;
+        renderOverview();
+      }
+      if (trendButton) {
+        state.trendMetric = trendButton.dataset.trendMetric;
+        renderDetail(state.selectedModelId);
+        return;
+      }
+      if (toggle) {
+        const siteId = toggle.dataset.toggleSite;
+        if (state.collapsedSiteIds.has(siteId)) {
+          state.collapsedSiteIds.delete(siteId);
+        } else {
+          state.collapsedSiteIds.add(siteId);
+        }
+        renderModelGroups();
+        return;
+      }
+      if (row) {
+        showDetail(row.dataset.modelId);
+      }
+    });
+
+    document.getElementById("searchInput").addEventListener("input", (event) => {
+      state.query = event.target.value.trim();
+      renderModelGroups();
+    });
+
+    document.getElementById("sortSelect").addEventListener("change", (event) => {
+      state.sort.key = event.target.value;
+      renderModelGroups();
+    });
+
+    document.getElementById("sortDirectionButton").addEventListener("click", () => {
+      state.sort.direction = state.sort.direction === "asc" ? "desc" : "asc";
+      renderModelGroups();
+    });
+
+    document.getElementById("modelSelect").addEventListener("change", (event) => {
+      renderDetail(event.target.value);
+    });
+
+    document.getElementById("backButton").addEventListener("click", showOverview);
+    document.getElementById("exportButton").addEventListener("click", () => showToast("Demo：報告輸出已加入佇列"));
+
+    renderOverview();
+    renderDetail(state.selectedModelId);
+  </script>
+</body>
+</html>
