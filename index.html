@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AIoTers DevOps - 模型管理 Demo</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
       --ink: #1f2328;
@@ -518,6 +519,13 @@
       word-break: break-word;
     }
 
+    .model-id-with-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
     .group-title {
       display: flex;
       align-items: center;
@@ -556,6 +564,32 @@
 
     .dot.bad {
       background: var(--bad);
+    }
+
+    .health-dot {
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255, 255, 255, .9);
+      border-radius: 999px;
+      box-shadow: 0 0 0 1px rgba(31, 35, 40, .16);
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .health-dot.ok {
+      background: #43b850;
+    }
+
+    .health-dot.warn {
+      background: var(--warn);
+    }
+
+    .health-dot.bad {
+      background: var(--bad);
+    }
+
+    .health-dot.neutral {
+      background: #89939c;
     }
 
     .count-chip {
@@ -768,6 +802,13 @@
       margin-bottom: 28px;
     }
 
+    .metric-section-title {
+      margin: 4px 0 12px;
+      color: #2e3a43;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
     .secondary-metric-section {
       margin: -12px 0 28px;
     }
@@ -938,6 +979,75 @@
       height: 250px;
       display: block;
       overflow: visible;
+    }
+
+    .chart-error {
+      min-height: 250px;
+      display: grid;
+      place-items: center;
+      color: var(--bad);
+      background: #fff7f7;
+      border: 1px dashed #e9a6a6;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .confusion-matrix {
+      display: grid;
+      grid-template-columns: 118px 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 8px 12px;
+      min-height: 250px;
+      align-items: stretch;
+    }
+
+    .matrix-column-labels {
+      grid-column: 2;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      color: #59636c;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .matrix-row-labels {
+      grid-row: 2;
+      display: grid;
+      grid-template-rows: repeat(2, 1fr);
+      gap: 8px;
+      color: #59636c;
+      font-size: 11px;
+      align-items: center;
+      text-align: right;
+    }
+
+    .matrix-grid {
+      grid-column: 2;
+      grid-row: 2;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .matrix-cell {
+      min-height: 94px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #bdd0d8;
+      border-radius: 6px;
+      background: #eaf3f5;
+      color: #173844;
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .matrix-cell.error-cell {
+      border-color: #f0c8c8;
+      background: #fff0f0;
+      color: #a9272d;
     }
 
     .feature-table {
@@ -1270,43 +1380,14 @@
           <div class="service-grid" id="serviceGrid"></div>
         </section>
 
+        <h3 class="metric-section-title">核心模型指標</h3>
         <div class="metrics" id="metricCards"></div>
         <section class="secondary-metric-section hidden" id="secondaryMetricSection">
-          <h3 class="secondary-metric-title">標註資料評測 <span class="count-chip" id="labeledRowsBadge"></span></h3>
+          <h3 class="secondary-metric-title">次要模型指標</h3>
           <div class="secondary-metrics" id="secondaryMetricCards"></div>
         </section>
 
-        <div class="charts">
-          <section class="chart-card">
-            <div class="chart-head">
-              <div>
-                <h4 class="chart-title" id="trendChartTitle">MAE / MAPE / Skill Score 趨勢</h4>
-                <p class="chart-subtitle" id="trendChartSubtitle">--</p>
-              </div>
-              <div class="segmented" id="trendSegments" aria-label="指標切換">
-                <span>MAE</span>
-                <span class="active">MAPE</span>
-                <span>skill_score</span>
-              </div>
-            </div>
-            <svg id="barChart" class="chart-svg" viewBox="0 0 520 250" role="img" aria-label="MAPE 趨勢長條圖"></svg>
-          </section>
-
-          <section class="chart-card">
-            <div class="chart-head">
-              <div>
-                <h4 class="chart-title" id="comparisonChartTitle">Actual vs Prediction vs<br>Baseline</h4>
-                <p class="chart-subtitle" id="lineSubtitle">chiller_power_kw</p>
-              </div>
-              <div class="legend" id="lineLegend">
-                <span style="color:#17637c">Actual (實際值)</span>
-                <span style="color:#f14343">Prediction (預測值)</span>
-                <span style="color:#727b83">Baseline (基準預測)</span>
-              </div>
-            </div>
-            <svg id="lineChart" class="chart-svg" viewBox="0 0 520 250" role="img" aria-label="實際值、預測值、基準預測折線圖"></svg>
-          </section>
-        </div>
+        <div class="charts" id="chartsContainer"></div>
 
         <h3 class="detail-subtitle">輸入特徵漂移監測</h3>
         <div class="feature-table">
@@ -1328,7 +1409,7 @@
 
         <div class="bottom-grid">
           <section class="quality-card">
-            <h3 class="detail-subtitle" id="qualityTitle">評測資料品質</h3>
+            <h3 class="detail-subtitle" id="qualityTitle">資料品質</h3>
             <div class="quality-row" id="qualityStats"></div>
             <div class="quality-details" id="qualityDetails"></div>
           </section>
@@ -1351,7 +1432,7 @@
       selectedModelId: "predict.chiller_power_01",
       collapsedSiteIds: new Set(sites.map((site) => site.id)),
       sort: { key: "model_id", direction: "asc" },
-      trendMetric: "MAPE"
+      chartSeries: {}
     };
 
     let siteById = new Map();
@@ -1380,12 +1461,9 @@
     }
 
     function normalizeSite(site) {
-      const status = displayStatus(site.health_status);
       return {
         id: site.id,
         name: site.name,
-        health: status,
-        level: statusTone(status),
         stats: {
           normal: site.stats?.normal || 0,
           warning: site.stats?.warning || 0,
@@ -1395,9 +1473,9 @@
     }
 
     function normalizeModel(model) {
-      const overview = model.overview || {};
       const target = model.target_point || model.target_scope || "";
-      const drift = model.drift_status || overview.drift || model.health_status;
+      const overviewMetrics = (model.overview_metrics || []).map(normalizeMetric);
+      const psiMetric = overviewMetrics.find((metric) => metric.key === "psi");
       return {
         ...model,
         siteId: model.site_id,
@@ -1410,28 +1488,25 @@
         statusText: model.health_status,
         target,
         version: model.model_version,
-        mainMetric: primaryMetricFromData(model),
-        skill: comparisonMetricFromData(model),
-        drift,
+        mainMetric: overviewMetrics[0]?.displayValue || "--",
+        skill: overviewMetrics[1]?.displayValue || "--",
+        drift: psiMetric?.status || "unknown",
         lastEval: model.last_evaluated,
         updated: model.evaluated_at || model.statistics_updated_at || appData?.meta?.page_updated_at || "",
         period: model.evaluation_period || model.statistics_period || appData?.meta?.default_period?.label || "",
         ops: normalizeServiceInfo(model.service_info),
-        metrics: (model.metric_cards || []).map(normalizeMetric),
-        secondaryMetrics: model.secondary_metrics?.metrics || [],
-        labeledRows: model.secondary_metrics?.labeled_rows || 0,
-        features: (model.feature_drift || []).map((feature) => [
-          feature.feature_name,
-          String(feature.psi),
-          String(feature.ks_p_value),
-          String(feature.importance),
-          feature.status
-        ]),
-        quality: normalizeQuality(model),
-        chartsByType: {
-          bar: model.charts?.find((chart) => chart.type === "bar") || null,
-          line: model.charts?.find((chart) => chart.type === "line") || null
-        }
+        overviewMetrics,
+        metrics: (model.detail_metrics?.core || []).map(normalizeMetric),
+        secondaryMetrics: (model.detail_metrics?.secondary || []).map(normalizeMetric),
+        dataQualityMetrics: (model.data_quality_metrics || []).map(normalizeMetric),
+        features: (model.feature_drift || []).map((feature) => ({
+          name: feature.feature_name,
+          psi: feature.psi,
+          ksPValue: feature.ks_p_value,
+          importance: feature.importance,
+          status: feature.status
+        })),
+        charts: model.charts || []
       };
     }
 
@@ -1449,79 +1524,57 @@
     function normalizeMetric(metric) {
       return {
         ...metric,
+        displayValue: formatMetricValue(metric),
+        tone: metric.status ? statusTone(metric.status) : "",
         tooltip: metric.tooltip || metric.formula
       };
     }
 
-    function primaryMetricFromData(model) {
-      const overview = model.overview || {};
-      if (model.kind === "forecast") return `${overview.mape || ""} (MAPE)`;
-      if (model.kind === "anomaly") return overview.events || "";
-      if (model.kind === "recommender") return overview.success_rate || "";
-      return "";
-    }
-
-    function comparisonMetricFromData(model) {
-      const overview = model.overview || {};
-      if (model.kind === "forecast") return overview.skill_score || "";
-      if (model.kind === "anomaly") return `Anomaly Rate ${overview.anomaly_rate || ""}`;
-      if (model.kind === "recommender") return `Guardrail Rate ${overview.guardrail_rate || ""}`;
-      return "";
-    }
-
-    function normalizeQuality(model) {
-      const qualityMap = {
-        forecast: [
-          ["PREDICTION_COUNT", model.evaluation_data_quality?.prediction_count],
-          ["ACTUAL_COUNT", model.evaluation_data_quality?.actual_count],
-          ["JOINED_ROWS", model.evaluation_data_quality?.joined_rows],
-          ["EXCLUDED_ROWS", model.evaluation_data_quality?.excluded_actual_rows]
-        ],
-        anomaly: [
-          ["SCORED_ROWS", model.scoring_stats?.scored_rows],
-          ["VALID_ROWS", model.scoring_stats?.valid_rows],
-          ["EXCLUDED_ROWS", model.scoring_stats?.excluded_rows],
-          ["LABELED_ROWS", model.scoring_stats?.labeled_rows]
-        ],
-        recommender: [
-          ["TOTAL_RUNS", model.execution_stats?.total_runs],
-          ["SUCCESSFUL_RUNS", model.execution_stats?.successful_runs],
-          ["FAILED_RUNS", model.execution_stats?.failed_runs],
-          ["GUARDRAIL_BLOCKED_RUNS", model.execution_stats?.guardrail_blocked_runs],
-          ["ADOPTED_RUNS", model.execution_stats?.adopted_runs]
-        ]
-      };
-      return {
-        stats: (qualityMap[model.kind] || [])
-          .filter(([, value]) => value !== undefined && value !== null)
-          .map(([label, value]) => [label, Number(value).toLocaleString()])
-      };
+    function formatMetricValue(metric = {}) {
+      if (metric.value === null || metric.value === undefined || metric.value === "") return "--";
+      const value = typeof metric.value === "number"
+        ? metric.value.toLocaleString("en-US", { maximumFractionDigits: 4 })
+        : String(metric.value);
+      if (!metric.unit) return value;
+      return metric.unit === "%" ? `${value}%` : `${value} ${metric.unit}`;
     }
 
     const statusTone = (status) => {
-      if (status === "Critical" || status === "嚴重") return "bad";
-      if (status === "Warning" || status === "警告") return "warn";
-      return "ok";
+      const normalized = normalizeStatus(status);
+      if (normalized === "critical") return "bad";
+      if (normalized === "warning") return "warn";
+      if (normalized === "normal") return "ok";
+      return "neutral";
     };
 
     const displayStatus = (status) => {
       if (normalizeStatus(status) === "critical") return "Critical";
       if (normalizeStatus(status) === "warning") return "Warning";
-      return "Normal";
+      if (normalizeStatus(status) === "normal") return "Normal";
+      return "Unknown";
     };
 
     const displayDrift = (drift) => displayStatus(drift);
 
     const statusRank = (status) => {
-      if (status === "Critical" || status === "嚴重") return 3;
-      if (status === "Warning" || status === "警告") return 2;
-      return 1;
+      const normalized = normalizeStatus(status);
+      if (normalized === "critical") return 3;
+      if (normalized === "warning") return 2;
+      if (normalized === "normal") return 1;
+      return 0;
     };
 
     const normalizeStatus = (status) => {
-      if (status === "Critical" || status === "嚴重") return "critical";
-      if (status === "Warning" || status === "警告") return "warning";
-      return "normal";
+      const normalized = String(status || "").toLowerCase();
+      if (normalized === "critical" || status === "嚴重") return "critical";
+      if (normalized === "warning" || status === "警告") return "warning";
+      if (normalized === "normal" || status === "正常") return "normal";
+      return "unknown";
+    };
+
+    const healthDot = (status) => {
+      const label = displayStatus(status);
+      return `<span class="health-dot ${statusTone(status)}" role="img" aria-label="${label}" title="${label}"></span>`;
     };
 
     const siteStatsFor = (siteId) => {
@@ -1529,28 +1582,17 @@
       const stats = siteModels.reduce((result, model) => {
         result[normalizeStatus(model.status)] += 1;
         return result;
-      }, { normal: 0, warning: 0, critical: 0 });
-      return { ...stats, total: stats.normal + stats.warning + stats.critical };
+      }, { normal: 0, warning: 0, critical: 0, unknown: 0 });
+      return {
+        ...stats,
+        total: stats.normal + stats.warning + stats.critical + stats.unknown
+      };
     };
 
     const overallCounts = () => models.reduce((result, model) => {
       result[normalizeStatus(model.status)] += 1;
       return result;
-    }, { normal: 0, warning: 0, critical: 0 });
-
-    const psiStatus = (psi) => {
-      const value = Number(psi);
-      if (value > 0.25) return "Critical";
-      if (value >= 0.10) return "Warning";
-      return "Normal";
-    };
-
-    const worstFeatureStatus = (features) => {
-      return features.reduce((worst, feature) => {
-        const status = psiStatus(feature[1]);
-        return statusRank(status) > statusRank(worst) ? status : worst;
-      }, "Normal");
-    };
+    }, { normal: 0, warning: 0, critical: 0, unknown: 0 });
 
     const numberFrom = (value) => {
       const match = String(value).replace(/,/g, "").match(/-?\d+(\.\d+)?/);
@@ -1592,51 +1634,13 @@
 
     function detailOf(model) {
       const site = siteById.get(model.siteId);
-      const barChart = model.chartsByType.bar;
-      const lineChart = model.chartsByType.line;
-      const trendSeries = Object.fromEntries((barChart?.series || []).map((series) => [series.name, series.values]));
-      const line = lineFromChart(lineChart);
-      const chart = {
-        trendTitle: barChart?.title || "",
-        trendSubtitle: barChart?.subtitle || "",
-        segments: (barChart?.series || []).map((series) => series.name),
-        defaultMetric: barChart?.default_metric || barChart?.series?.[0]?.name || "",
-        comparisonTitle: lineChart?.title || "",
-        comparisonSubtitle: lineChart?.subtitle || "",
-        legend: (lineChart?.series || []).map((series) => series.name),
-        xAxis: {
-          bar: barChart?.x_axis || [],
-          line: lineChart?.x_axis || []
-        }
-      };
       return {
         ...model,
         healthStatus: displayStatus(model.status),
         healthTone: statusTone(model.status),
-        healthRule: appData?.rules?.health_status?.[model.kind] || "",
         siteName: site?.name || model.site_name || "",
         siteCode: site?.id || model.siteId,
-        evaluatedAt: model.updated,
-        statuses: {
-          service: displayStatus(model.status),
-          performance: displayStatus(model.status),
-          drift: displayDrift(model.drift),
-          data: displayStatus(model.status),
-          overall: displayStatus(model.status)
-        },
-        trendSeries,
-        bars: trendSeries[barChart?.default_metric] || barChart?.series?.[0]?.values || [],
-        line,
-        chart
-      };
-    }
-
-    function lineFromChart(chart) {
-      const series = chart?.series || [];
-      return {
-        actual: series[0]?.values || [],
-        prediction: series[1]?.values || [],
-        baseline: series[2]?.values || []
+        evaluatedAt: model.updated
       };
     }
 
@@ -1649,10 +1653,11 @@
 
     function renderOverallCounts() {
       const counts = overallCounts();
-      document.getElementById("totalCount").textContent = counts.normal + counts.warning + counts.critical;
+      const total = counts.normal + counts.warning + counts.critical + counts.unknown;
+      document.getElementById("totalCount").textContent = total;
       const summary = document.querySelector(".summary-count");
       summary.innerHTML = `
-        總數 <strong id="totalCount">${counts.normal + counts.warning + counts.critical}</strong>
+        總數 <strong id="totalCount">${total}</strong>
         <span class="ok-text">Normal ${counts.normal}</span>
         <span class="warn-text">Warning ${counts.warning}</span>
         <span class="bad-text">Critical ${counts.critical}</span>
@@ -1688,65 +1693,31 @@
         anomaly: "event detection",
         recommender: "operation recommendation"
       };
-      const metricValue = (model, metric) => {
-        if (metric === "mape") return model.mainMetric.replace(" (MAPE)", "");
-        if (metric === "skill_score") return model.skill;
-        if (metric === "drift") return displayDrift(model.drift);
-        if (metric === "events") return model.overview?.events || "";
-        if (metric === "anomaly_rate") return model.overview?.anomaly_rate || "";
-        if (metric === "score_p99") return model.overview?.score_p99 || "";
-        if (metric === "success_rate") return model.overview?.success_rate || "";
-        if (metric === "guardrail_rate") return model.overview?.guardrail_rate || "";
-        if (metric === "p95_latency") return model.overview?.p95_latency || "";
-        if (metric === "scope") return model.target_scope || model.target;
-        return "";
-      };
-      const metricTone = (model, metric) => {
-        if (metric === "drift") return statusTone(model.drift);
-        if (metric === "mape" || metric === "events" || metric === "anomaly_rate" || metric === "score_p99") return statusTone(model.status);
-        if (metric === "skill_score") return model.skill.includes("-") ? "bad" : "ok";
-        return "ok";
-      };
-      const kindColumns = {
-        forecast: [
-          ["Model ID", (model) => `<span class="mono">${model.id}</span>`],
-          ["Target Point", (model) => `<span class="mono">${model.target}</span>`],
-          ["Health Status", (model) => `<span class="${statusTone(model.status)}-text">${displayStatus(model.status)}</span>`],
-          ["MAPE", (model) => metricValue(model, "mape")],
-          ["Skill Score", (model) => `<span class="${metricTone(model, "skill_score")}-text">${metricValue(model, "skill_score")}</span>`],
-          ["Drift", (model) => `<span class="${metricTone(model, "drift")}-text">${metricValue(model, "drift")}</span>`],
-          ["Last Evaluated", (model) => model.lastEval]
-        ],
-        anomaly: [
-          ["Model ID", (model) => `<span class="mono">${model.id}</span>`],
-          ["Target Point", (model) => `<span class="mono">${model.target}</span>`],
-          ["Health Status", (model) => `<span class="${statusTone(model.status)}-text">${displayStatus(model.status)}</span>`],
-          ["Events", (model) => metricValue(model, "events")],
-          ["Anomaly Rate", (model) => `<span class="${metricTone(model, "anomaly_rate")}-text">${metricValue(model, "anomaly_rate")}</span>`],
-          ["Score P99", (model) => `<span class="${metricTone(model, "score_p99")}-text">${metricValue(model, "score_p99")}</span>`],
-          ["Last Evaluated", (model) => model.lastEval]
-        ],
-        recommender: [
-          ["Model ID", (model) => `<span class="mono">${model.id}</span>`],
-          ["Target / Scope", (model) => `<span class="mono">${metricValue(model, "scope")}</span>`],
-          ["Health Status", (model) => `<span class="${statusTone(model.status)}-text">${displayStatus(model.status)}</span>`],
-          ["Success Rate", (model) => `<span class="${metricTone(model, "success_rate")}-text">${metricValue(model, "success_rate")}</span>`],
-          ["P95 Latency", (model) => metricValue(model, "p95_latency")],
-          ["Guardrail Rate", (model) => `<span class="${metricTone(model, "guardrail_rate")}-text">${metricValue(model, "guardrail_rate")}</span>`],
-          ["Last Evaluated", (model) => model.lastEval]
-        ]
+      const metricCell = (metric) => {
+        if (!metric) return "--";
+        const toneClass = metric.tone ? `${metric.tone}-text` : "";
+        return `<span class="${toneClass}" ${metric.tooltip ? `title="${metric.tooltip}"` : ""}>${metric.displayValue}</span>`;
       };
 
       return ["forecast", "anomaly", "recommender"].map((kind) => {
         const kindModels = siteModels.filter((model) => model.kind === kind);
         if (!kindModels.length) return "";
-        const columns = kindColumns[kind];
-        const widthMap = {
-          forecast: ["21%", "22%", "12%", "10%", "13%", "11%", "11%"],
-          anomaly: ["21%", "22%", "12%", "11%", "13%", "10%", "11%"],
-          recommender: ["21%", "26%", "12%", "12%", "11%", "11%", "7%"]
-        };
-        const widths = widthMap[kind];
+        const metricColumns = kindModels[0].overviewMetrics.map((metric) => [
+          metric.label,
+          (model) => metricCell(model.overviewMetrics.find((item) => item.key === metric.key))
+        ]);
+        const columns = [
+          ["Model ID", (model) => `
+            <span class="model-id-with-status">
+              ${healthDot(model.status)}
+              <span class="mono">${model.id}</span>
+            </span>
+          `],
+          [kind === "recommender" ? "Target / Scope" : "Target Point", (model) => `<span class="mono">${model.targetScope || model.target}</span>`],
+          ...metricColumns,
+          ["Last Evaluated", (model) => model.lastEval || "--"]
+        ];
+        const columnWidth = `${(100 / columns.length).toFixed(3)}%`;
 
         return `
           <div class="kind-block ${kind}">
@@ -1760,7 +1731,7 @@
             <div class="model-table-wrap">
               <table class="model-table">
                 <colgroup>
-                  ${widths.map((width) => `<col style="width: ${width}">`).join("")}
+                  ${columns.map(() => `<col style="width: ${columnWidth}">`).join("")}
                 </colgroup>
                 <thead>
                   <tr>
@@ -1795,17 +1766,21 @@
       document.getElementById("modelGroups").innerHTML = grouped.length ? grouped.map(({ site, models: siteModels }) => {
         const collapsed = state.collapsedSiteIds.has(site.id);
         const siteStats = siteStatsFor(site.id);
-        const siteLevel = siteStats.critical ? "bad" : siteStats.warning ? "warn" : "ok";
-        const siteHealth = siteStats.critical ? "Critical" : siteStats.warning ? "Warning" : "Normal";
+        const siteHealth = siteStats.critical
+          ? "Critical"
+          : siteStats.warning
+            ? "Warning"
+            : siteStats.normal
+              ? "Normal"
+              : "Unknown";
         return `
         <section class="model-group ${collapsed ? "collapsed" : ""}">
           <div class="group-head">
             <div class="group-summary">
               <div class="group-title">
-                <span class="dot ${siteLevel}"></span>
+                ${healthDot(siteHealth)}
                 <span>${site.name}</span>
                 <span class="count-chip">${siteStats.total} models</span>
-                <span class="badge ${siteLevel}">${siteHealth}</span>
               </div>
               <code class="group-site-id mono">${site.id}</code>
             </div>
@@ -1867,12 +1842,16 @@
         ? `<details class="scope-details"><summary>${model.targetScope}</summary><div class="scope-list">${outputPoints.map((point) => `<span class="mono">${point}</span>`).join("")}</div></details>`
         : `<span class="mono">${model.targetScope || model.target}</span>`;
       const cells = [
-        ["Model ID", model.shortId || model.id],
+        ["Model ID", `
+          <span class="model-id-with-status">
+            ${healthDot(model.status)}
+            <span class="mono">${model.shortId || model.id}</span>
+          </span>
+        `],
         ["Model Kind", model.type],
         ["Site", `${site.name}<br><span class="small-code mono">${site.id}</span>`],
         [isRecommender ? "Target / Scope" : "Target Point", targetScope],
         ["Model Version", model.version],
-        ["Health Status", `<span class="badge ${model.healthTone}" ${model.healthRule ? `title="${model.healthRule}"` : ""}>● ${model.healthStatus}</span>`],
         [isRecommender ? "統計更新時間" : "Evaluated At", model.evaluatedAt],
         [isRecommender ? "統計期間" : "評測期間", model.period]
       ];
@@ -1911,7 +1890,7 @@
       const metricHtml = (metric) => `
         <article class="metric-card" ${metric.tooltip ? `title="${metric.tooltip}"` : ""}>
           <h4>${metric.label}</h4>
-          <span class="metric-value ${metric.tone ? `${metric.tone}-text` : ""}">${metric.value}</span>
+          <span class="metric-value ${metric.tone ? `${metric.tone}-text` : ""}">${metric.displayValue}</span>
           ${metric.mini ? `<svg viewBox="0 0 120 42" width="112" height="42" aria-hidden="true">
             <polyline points="2,33 18,24 34,29 50,18 66,23 82,11 98,17 116,8" fill="none" stroke="#d71920" stroke-width="4"/>
           </svg>` : `<span class="metric-note ${metric.tone ? `${metric.tone}-text` : ""}">${metric.delta || ""}</span> <span class="metric-note">${metric.note || ""}</span>`}
@@ -1920,10 +1899,8 @@
       const secondary = model.secondaryMetrics || [];
       const secondarySection = document.getElementById("secondaryMetricSection");
       const secondaryEl = document.getElementById("secondaryMetricCards");
-      const labeledRowsBadge = document.getElementById("labeledRowsBadge");
       document.getElementById("metricCards").innerHTML = model.metrics.map(metricHtml).join("");
       secondarySection.classList.toggle("hidden", secondary.length === 0);
-      labeledRowsBadge.textContent = model.labeledRows ? `Labeled Rows: ${model.labeledRows.toLocaleString()}` : "";
       secondaryEl.innerHTML = secondary.map(metricHtml).join("");
     }
 
@@ -1937,150 +1914,210 @@
       }).join("");
     }
 
-    function renderBarChart(values, labels = []) {
-      if (!values.length) {
-        document.getElementById("barChart").innerHTML = "";
-        return;
-      }
-      const max = Math.max(...values.map((value) => Math.abs(value)), 1);
+    function barSvgMarkup(values, labels = []) {
+      const numericValues = values.map((value) => value === null ? null : Number(value));
+      const max = Math.max(...numericValues.filter(Number.isFinite).map((value) => Math.abs(value)), 1);
       const chartStart = 22;
       const chartEnd = 498;
       const gap = 9;
-      const width = Math.max(12, Math.min(28, (chartEnd - chartStart - gap * (values.length - 1)) / values.length));
+      const width = Math.max(8, Math.min(28, (chartEnd - chartStart - gap * (values.length - 1)) / values.length));
       const base = 220;
-      const bars = values.map((value, index) => {
+      const bars = numericValues.map((value, index) => {
+        if (!Number.isFinite(value)) return "";
         const height = Math.round(Math.abs(value) / max * 135);
         const x = chartStart + index * (width + gap);
         const y = value >= 0 ? base - height : base;
         return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="2" fill="${value >= 0 ? "#bed0d9" : "#f3b6b6"}"></rect>`;
       }).join("");
-      document.getElementById("barChart").innerHTML = `
+      return `
+        <svg class="chart-svg" viewBox="0 0 520 250" role="img" aria-label="長條圖">
         ${bars}
         ${axisLabelMarkup(labels, 244)}
+        </svg>
       `;
     }
 
-    function renderTrendSegments(model, activeMetric) {
-      document.getElementById("trendSegments").innerHTML = model.chart.segments.map((segment) => (
-        `<button class="${segment === activeMetric ? "active" : ""}" type="button" data-trend-metric="${segment}">${segment}</button>`
-      )).join("");
-    }
-
-    function pathFrom(values, maxValue) {
-      const max = maxValue || Math.max(...values) || 1;
-      const min = 0;
+    function pathFrom(values, minValue, maxValue) {
+      const range = maxValue - minValue || 1;
       const startX = 30;
       const endX = 490;
       const stepX = values.length > 1 ? (endX - startX) / (values.length - 1) : 0;
+      let drawing = false;
       return values.map((value, index) => {
+        if (value === null || value === undefined || !Number.isFinite(Number(value))) {
+          drawing = false;
+          return "";
+        }
         const x = startX + index * stepX;
-        const y = 215 - ((value - min) / (max - min) * 185);
-        return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
-      }).join(" ");
+        const y = 215 - ((Number(value) - minValue) / range * 185);
+        const command = drawing ? "L" : "M";
+        drawing = true;
+        return `${command} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      }).filter(Boolean).join(" ");
     }
 
-    function renderLineChart(line, labels = []) {
-      const series = [
-        { values: line.actual || [], color: "#17637c", width: 5, dash: "" },
-        { values: line.prediction || [], color: "#f14343", width: 5, dash: "" },
-        { values: line.baseline || [], color: "#727b83", width: 4, dash: "18 12" }
-      ].filter((item) => item.values.length);
-      if (!series.length) {
-        document.getElementById("lineChart").innerHTML = "";
-        return;
-      }
-      const maxValue = Math.max(...series.flatMap((item) => item.values)) * 1.15 || 1;
-      const gridValues = [0, .25, .5, .75, 1].map((ratio) => Math.round(maxValue * ratio * 10) / 10);
+    function lineSvgMarkup(chart) {
+      const colors = ["#17637c", "#f14343", "#727b83", "#28784f", "#8c5e9e"];
+      const allValues = chart.series
+        .flatMap((series) => series.values)
+        .filter((value) => value !== null && Number.isFinite(Number(value)))
+        .map(Number);
+      const rawMin = Math.min(...allValues);
+      const rawMax = Math.max(...allValues);
+      const padding = Math.max((rawMax - rawMin) * 0.12, Math.abs(rawMax) * 0.03, 0.01);
+      const minValue = rawMin - padding;
+      const maxValue = rawMax + padding;
+      const gridValues = [0, .25, .5, .75, 1].map((ratio) => (
+        Math.round((minValue + (maxValue - minValue) * ratio) * 100) / 100
+      ));
       const grid = gridValues.map((value, index) => {
         const y = 215 - index * 46;
         return `<text x="0" y="${y + 4}" font-size="10" fill="#69727b">${value.toLocaleString()}</text>`;
       }).join("");
-      const paths = series.map((item) => `
-        <path d="${pathFrom(item.values, maxValue)}" fill="none" stroke="${item.color}" stroke-width="${item.width}" ${item.dash ? `stroke-dasharray="${item.dash}"` : ""} stroke-linejoin="round"></path>
+      const paths = chart.series.map((series, index) => `
+        <path d="${pathFrom(series.values, minValue, maxValue)}" fill="none" stroke="${colors[index % colors.length]}" stroke-width="${index < 2 ? 4 : 3}" ${index === 2 ? `stroke-dasharray="14 9"` : ""} stroke-linejoin="round"></path>
       `).join("");
-      document.getElementById("lineChart").innerHTML = `
+      return `
+        <svg class="chart-svg" viewBox="0 0 520 250" role="img" aria-label="${chart.title}">
         ${grid}
         ${paths}
-        ${axisLabelMarkup(labels, 242)}
+        ${axisLabelMarkup(chart.x_axis, 242)}
+        </svg>
       `;
     }
 
+    function confusionMatrixMarkup(chart) {
+      const cells = chart.matrix.flat();
+      return `
+        <div class="confusion-matrix" role="img" aria-label="${chart.title}">
+          <div class="matrix-column-labels">${chart.x_axis.map((label) => `<span>${label}</span>`).join("")}</div>
+          <div class="matrix-row-labels">${chart.y_axis.map((label) => `<span>${label}</span>`).join("")}</div>
+          <div class="matrix-grid">
+            ${cells.map((value, index) => `
+              <div class="matrix-cell ${index === 1 || index === 2 ? "error-cell" : ""}" data-matrix-cell>${Number(value).toLocaleString()}</div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function histogramMarkup(chart) {
+      const labels = chart.bins.map((bin) => `${bin.start}-${bin.end}`);
+      return barSvgMarkup(chart.bins.map((bin) => bin.count), labels);
+    }
+
+    function chartValidationError(chart) {
+      const supportedTypes = ["line", "bar", "confusion_matrix", "histogram"];
+      if (!supportedTypes.includes(chart.type)) return "不支援的圖表類型";
+      if (chart.type === "line" || chart.type === "bar") {
+        if (!Array.isArray(chart.x_axis) || !Array.isArray(chart.series) || !chart.series.length) {
+          return "資料格式錯誤";
+        }
+        const invalidSeries = chart.series.some((series) => (
+          !Array.isArray(series.values) || series.values.length !== chart.x_axis.length
+        ));
+        if (invalidSeries) return "資料格式錯誤";
+      }
+      if (chart.type === "confusion_matrix") {
+        const validMatrix = Array.isArray(chart.matrix) &&
+          chart.matrix.length === 2 &&
+          chart.matrix.every((row) => Array.isArray(row) && row.length === 2);
+        if (!validMatrix || chart.x_axis?.length !== 2 || chart.y_axis?.length !== 2) {
+          return "資料格式錯誤";
+        }
+      }
+      if (chart.type === "histogram") {
+        const validBins = Array.isArray(chart.bins) && chart.bins.length &&
+          chart.bins.every((bin) => Number.isFinite(Number(bin.count)));
+        if (!validBins) return "資料格式錯誤";
+      }
+      return "";
+    }
+
+    function chartCardMarkup(chart) {
+      const error = chartValidationError(chart);
+      if (error) {
+        return `
+          <section class="chart-card" data-chart-type="${chart.type || "unknown"}">
+            <div class="chart-head"><div><h4 class="chart-title">${chart.title || "未命名圖表"}</h4></div></div>
+            <div class="chart-error">${error}</div>
+          </section>
+        `;
+      }
+
+      const colors = ["#17637c", "#f14343", "#727b83", "#28784f", "#8c5e9e"];
+      let controls = "";
+      let body = "";
+      if (chart.type === "bar") {
+        const defaultSeries = chart.default_metric || chart.series[0].key || chart.series[0].name;
+        const activeSeries = state.chartSeries[chart.id] || defaultSeries;
+        const selected = chart.series.find((series) => (
+          (series.key || series.name) === activeSeries
+        )) || chart.series[0];
+        controls = chart.series.length > 1 ? `
+          <div class="segmented" aria-label="指標切換">
+            ${chart.series.map((series) => {
+              const key = series.key || series.name;
+              return `<button class="${key === (selected.key || selected.name) ? "active" : ""}" type="button" data-chart-id="${chart.id}" data-chart-series="${key}">${series.name}</button>`;
+            }).join("")}
+          </div>
+        ` : "";
+        body = barSvgMarkup(selected.values, chart.x_axis);
+      } else if (chart.type === "line") {
+        controls = `
+          <div class="legend">
+            ${chart.series.map((series, index) => `<span style="color:${colors[index % colors.length]}">${series.name}</span>`).join("")}
+          </div>
+        `;
+        body = lineSvgMarkup(chart);
+      } else if (chart.type === "confusion_matrix") {
+        body = confusionMatrixMarkup(chart);
+      } else {
+        body = histogramMarkup(chart);
+      }
+
+      return `
+        <section class="chart-card" data-chart-type="${chart.type}">
+          <div class="chart-head">
+            <div>
+              <h4 class="chart-title">${chart.title || "未命名圖表"}</h4>
+              <p class="chart-subtitle">${chart.subtitle || ""}</p>
+            </div>
+            ${controls}
+          </div>
+          ${body}
+        </section>
+      `;
+    }
+
+    function renderCharts(model) {
+      document.getElementById("chartsContainer").innerHTML = model.charts.length
+        ? model.charts.map(chartCardMarkup).join("")
+        : `<div class="chart-error">尚無圖表資料</div>`;
+    }
+
     function renderFeatures(model) {
-      const sortedFeatures = [...model.features].sort((a, b) => statusRank(psiStatus(b[1])) - statusRank(psiStatus(a[1])));
+      const sortedFeatures = [...model.features].sort((a, b) => statusRank(b.status) - statusRank(a.status));
       document.getElementById("featureRows").innerHTML = sortedFeatures.map((feature) => {
-        const status = psiStatus(feature[1]);
-        const tone = statusTone(status);
+        const tone = statusTone(feature.status);
         return `
           <tr>
-            <td class="mono">${feature[0]}</td>
-            <td class="mono">${feature[1]}</td>
-            <td class="mono">${feature[2]}</td>
-            <td class="mono">${feature[3]}</td>
-            <td><span class="${tone}-text">● ${status}</span></td>
+            <td class="mono">${feature.name}</td>
+            <td class="mono">${feature.psi}</td>
+            <td class="mono">${feature.ksPValue}</td>
+            <td class="mono">${feature.importance}</td>
+            <td><span class="${tone}-text">● ${displayStatus(feature.status)}</span></td>
           </tr>
         `;
       }).join("");
     }
 
-    function qualityCounts(model) {
-      const entries = Object.fromEntries(model.quality.stats.map(([label, value]) => [label, numberFrom(value)]));
-      const predictionCount = entries.PREDICTION_COUNT || 0;
-      const actualCount = entries.ACTUAL_COUNT || 0;
-      const joinedRows = entries.JOINED_ROWS || 0;
-      const excludedRows = entries.EXCLUDED_ROWS || 0;
-      const scoredRows = entries.SCORED_ROWS || 0;
-      const validRows = entries.VALID_ROWS || 0;
-      const labeledRows = entries.LABELED_ROWS || 0;
-      const totalRuns = entries.TOTAL_RUNS || 0;
-      const successfulRuns = entries.SUCCESSFUL_RUNS || 0;
-      const failedRuns = entries.FAILED_RUNS || 0;
-      const guardrailBlockedRuns = entries.GUARDRAIL_BLOCKED_RUNS || 0;
-      const adoptedRuns = entries.ADOPTED_RUNS || 0;
-      return {
-        predictionCount,
-        actualCount,
-        joinedRows,
-        excludedRows,
-        scoredRows,
-        validRows,
-        labeledRows,
-        totalRuns,
-        successfulRuns,
-        failedRuns,
-        guardrailBlockedRuns,
-        adoptedRuns
-      };
-    }
-
-    function percent(value) {
-      return `${(value * 100).toFixed(1)}%`;
-    }
-
     function renderQuality(model) {
-      const counts = qualityCounts(model);
-      document.getElementById("qualityTitle").textContent = model.kind === "recommender" ? "推薦執行統計" : "評測資料品質";
-      const qualityRows = model.kind === "anomaly" ? [
-        ["Scored Rows", counts.scoredRows.toLocaleString()],
-        ["Valid Rows", counts.validRows.toLocaleString()],
-        ["Excluded Rows", counts.excludedRows.toLocaleString()],
-        ...(counts.labeledRows ? [["Labeled Rows", counts.labeledRows.toLocaleString()]] : [])
-      ] : model.kind === "recommender" ? [
-        ["Total Runs", counts.totalRuns.toLocaleString()],
-        ["Successful Runs", counts.successfulRuns.toLocaleString(), "Successful Runs 包含 Guardrail Blocked Runs；攔截代表成功完成但未輸出。"],
-        ["Failed Runs", counts.failedRuns.toLocaleString(), "Failed Runs 不包含 Guardrail Blocked Runs；Successful Runs + Failed Runs = Total Runs。"],
-        ["Guardrail Blocked Runs", counts.guardrailBlockedRuns.toLocaleString(), "Guardrail Blocked Runs 是 Successful Runs 的子集合，不計入 Failed Runs。"],
-        ["Adopted Runs", counts.adoptedRuns.toLocaleString()]
-      ] : [
-        ["Prediction Count", counts.predictionCount.toLocaleString()],
-        ["Actual Count", counts.actualCount.toLocaleString()],
-        ["Joined Rows", counts.joinedRows.toLocaleString()],
-        ["Excluded Actual Rows", counts.excludedRows.toLocaleString()]
-      ];
-
-      document.getElementById("qualityStats").innerHTML = qualityRows.map(([label, value, title]) => `
-        <div class="quality-stat" ${title ? `title="${title}"` : ""}>
-          <span class="label">${label}</span>
-          <strong>${value}</strong>
+      document.getElementById("qualityTitle").textContent = "資料品質";
+      document.getElementById("qualityStats").innerHTML = model.dataQualityMetrics.map((metric) => `
+        <div class="quality-stat" ${metric.tooltip ? `title="${metric.tooltip}"` : ""}>
+          <span class="label">${metric.label}</span>
+          <strong class="${metric.tone ? `${metric.tone}-text` : ""}">${metric.displayValue}</strong>
         </div>
       `).join("");
       document.getElementById("qualityDetails").innerHTML = "";
@@ -2089,25 +2126,12 @@
     function renderDetail(id) {
       state.selectedModelId = id;
       const model = detailOf(modelById.get(id) || models[0]);
-      if (!model.chart.segments.includes(state.trendMetric)) {
-        state.trendMetric = model.chart.defaultMetric;
-      }
       document.getElementById("detailUpdated").textContent = model.updated;
-      document.getElementById("trendChartTitle").textContent = model.chart.trendTitle;
-      document.getElementById("trendChartSubtitle").textContent = model.chart.trendSubtitle;
-      renderTrendSegments(model, state.trendMetric);
-      document.getElementById("comparisonChartTitle").innerHTML = model.chart.comparisonTitle;
-      document.getElementById("lineSubtitle").textContent = model.chart.comparisonSubtitle;
-      document.getElementById("lineLegend").innerHTML = model.chart.legend.map((label, index) => {
-        const colors = ["#17637c", "#f14343", "#727b83"];
-        return `<span style="color:${colors[index]}">${label}</span>`;
-      }).join("");
       renderModelSelect(model);
       renderBasic(model);
       renderServiceInfo(model);
       renderMetrics(model);
-      renderBarChart(model.trendSeries?.[state.trendMetric] || model.bars, model.chart.xAxis.bar);
-      renderLineChart(model.line, model.chart.xAxis.line);
+      renderCharts(model);
       renderFeatures(model);
       renderQuality(model);
     }
@@ -2143,14 +2167,14 @@
     document.addEventListener("click", (event) => {
       const tab = event.target.closest("[data-kind]");
       const toggle = event.target.closest("[data-toggle-site]");
-      const trendButton = event.target.closest("[data-trend-metric]");
+      const chartSeriesButton = event.target.closest("[data-chart-series]");
       const row = event.target.closest("[data-model-id]");
       if (tab) {
         state.kind = tab.dataset.kind;
         renderOverview();
       }
-      if (trendButton) {
-        state.trendMetric = trendButton.dataset.trendMetric;
+      if (chartSeriesButton) {
+        state.chartSeries[chartSeriesButton.dataset.chartId] = chartSeriesButton.dataset.chartSeries;
         renderDetail(state.selectedModelId);
         return;
       }

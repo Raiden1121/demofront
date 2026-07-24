@@ -1,219 +1,217 @@
-# data.json 說明
+# 模型儀表板
 
-本 demo 的模型、站點、總覽、指標、圖表、漂移與資料品質內容都集中在 `data.json`。
+## 畫面指標與用途
 
-`index.html` 啟動時會執行 `fetch("./data.json")` 讀取此檔，再把 JSON 正規化成畫面需要的欄位。前端只負責顯示、排序、篩選、切換圖表指標與繪製 SVG；不再在 `index.html` 內寫死模型資料或圖表數列。
+模型總覽用來快速比較模型品質與資料狀態；詳細頁則用來判斷問題來自模型、輸入資料或服務執行。
 
-命名規則依 Python / PEP 8 慣例：JSON key 使用 `snake_case`。`label`、`title`、`name` 這類畫面顯示文字可維持原本大小寫；JSON 不是 Class 定義，所以 PascalCase 不適用。
+### 共通欄位
 
-> 注意：因為瀏覽器會用 `fetch` 載入 `data.json`，建議用本機 HTTP server 開啟頁面，例如在專案目錄執行 `python3 -m http.server 8000` 後瀏覽 `http://localhost:8000/`。直接用 `file://` 開啟可能會被瀏覽器阻擋讀取 JSON。
+| 欄位／指標 | 用途 |
+|---|---|
+| Model ID 前的狀態點 | 快速辨識模型整體狀態；綠色為 Normal、黃色為 Warning、紅色為 Critical。 |
+| Site 前的狀態點 | 顯示該 Site 全部模型中最嚴重的狀態。 |
+| Last Evaluated | 確認目前看到的模型指標是否仍在有效評估時間內。 |
+| 評測覆蓋率 | 顯示可成功配對並納入評估的資料比例；過低時，其他模型指標可能不具代表性。 |
 
-## 全域資料
+### Forecast 數值預測
 
-### `meta`
+模型總覽：
 
-整個 demo 的共用資訊。
+| 欄位／指標 | 用途 |
+|---|---|
+| WAPE | 主要相對誤差，以整體實際值加權，較不容易被單筆接近 0 的實際值嚴重放大。越低越好。 |
+| R² | 判斷模型解釋資料變化的能力。越接近 1 越好；小於 0 代表可能比直接使用平均值還差。 |
+| RMSE | 對較大的預測誤差給予更高懲罰，用來發現模型是否存在嚴重的大誤差。越低越好。 |
+| PSI | 比較目前輸入資料和基準資料的分布，快速檢查資料是否漂移。 |
 
-- `product`：產品名稱
-- `page`：頁面識別
-- `page_updated_at`：頁面更新時間
-- `default_period`：預設統計／評測期間
+詳細頁：
 
-### `rules`
+| 欄位／指標 | 用途 |
+|---|---|
+| MAE | 平均絕對誤差，以原始單位呈現，容易直接理解平均差多少 kW、°C 或其他單位。 |
+| RMSE | 強調大誤差，適合搭配 MAE 判斷是否存在少量但嚴重的預測偏差。 |
+| WAPE | 查看整體相對誤差，方便比較不同期間或不同量級的模型。 |
+| R² | 查看模型是否能跟上實際值的高低變化。 |
+| MAPE | 每筆資料的平均百分比誤差；實際值接近 0 時容易失真，因此只作補充判讀。 |
+| SMAPE | 對預測值與實際值採對稱比例計算，降低 MAPE 在低數值附近的不穩定。 |
+| Bias | 顯示模型是否長期高估或低估；正負方向比絕對大小更重要。 |
+| Baseline WAPE | 基準方法的誤差，用來判斷目前模型是否真的優於簡單基準。 |
+| Skill Score | 表示相對於 Baseline 的改善程度；正值代表優於基準，負值代表比基準差。 |
+| Actual／Prediction／Baseline 圖 | 直接比較實際值、模型預測與基準預測是否同步，以及誤差發生在哪些時間。 |
+| 誤差指標趨勢圖 | 觀察 MAE、RMSE、WAPE、R² 是否隨時間惡化。 |
 
-前端顯示狀態與比例時使用的規則說明。
+### Anomaly 異常偵測
 
-- `health_status`：Forecast / Anomaly / Recommender 的 Health Status 判定規則
-- `drift`：PSI、KS p-value 與漂移狀態門檻
-- `formulas`：各比例欄位的計算公式
-- `guardrail_blocked_runs`：Guardrail Blocked Runs 的計數定義
+模型總覽：
 
-## 模型總覽頁
+| 欄位／指標 | 用途 |
+|---|---|
+| F1 Score | Precision 與 Recall 的綜合分數，用來平衡誤報和漏報。越高越好。 |
+| Recall | 實際異常中被模型成功找出的比例，用來判斷漏掉多少異常。越高越好。 |
+| PR-AUC | 評估不同判定門檻下 Precision 與 Recall 的整體表現，適合異常樣本較少的情境。 |
+| PSI | 檢查異常模型的輸入資料分布是否改變。 |
 
-### `sites`
+詳細頁：
 
-對應總覽頁「依 Site 分組的模型清單」每個 Site header。
+| 欄位／指標 | 用途 |
+|---|---|
+| Precision | 模型判定為異常的資料中，真正異常的比例。低時代表誤報較多。 |
+| Recall | 所有實際異常中，被模型抓到的比例。低時代表漏報較多。 |
+| F1 Score | 同時考量 Precision 與 Recall，方便用單一數值比較模型版本。 |
+| PR-AUC | 檢查模型在不同 Threshold 下對少數異常樣本的整體辨識能力。 |
+| ROC-AUC | 衡量模型區分正常與異常的能力；異常比例很低時需搭配 PR-AUC 判讀。 |
+| 誤報率 | 實際正常卻被判定為異常的比例，用來評估不必要告警。 |
+| 漏報率 | 實際異常卻未被模型發現的比例，用來評估未被攔截的風險。 |
+| 異常事件數／異常率 | 顯示評估期間內異常事件的數量與占比，用來觀察事件量是否突然增加。 |
+| Threshold | 將 Anomaly Score 轉成正常或異常判定的門檻。 |
+| Score P95／P99 | 顯示異常分數的高分位數，用來觀察高風險尾端是否升高。 |
+| Brier Score | 評估機率預測和實際結果的差距，僅適用於輸出真正分類機率的模型。越低越好。 |
+| ECE | 判斷模型所說的機率是否可信，例如預測 80% 的事件是否約有 80% 發生。越低越好。 |
+| Log Loss | 對錯誤且過度自信的機率預測給予較大懲罰。越低越好。 |
+| 混淆矩陣 | 顯示 TP、FP、FN、TN，直接檢查正確告警、誤報、漏報與正確正常判定。 |
+| 異常分數分布圖 | 查看正常與高分資料的分布，以及 Threshold 是否設在合理位置。 |
 
-- `id`：Site ID
-- `name`：Site 名稱
-- `health_status`：Site 整體狀態
-- `stats.total`：模型總數
-- `stats.normal`：Normal 模型數
-- `stats.warning`：Warning 模型數
-- `stats.critical`：Critical 模型數
+### Recommender 推薦模型
 
-### `overview.tabs`
+模型總覽：
 
-對應總覽頁上方模型種類篩選。前端會直接依照這個陣列產生 tab。
+| 欄位／指標 | 用途 |
+|---|---|
+| NDCG@K | 同時考量前 K 名推薦的正確性與排序位置，越重要的推薦排得越前面，分數越高。 |
+| Precision@K | 前 K 個推薦中有效或相關推薦的比例。越高代表推薦清單越精準。 |
+| 採用率 | 推薦結果實際被使用或接受的比例，用來觀察推薦是否具現場可用性。 |
+| PSI | 檢查推薦模型輸入資料是否偏離訓練或基準期間。 |
 
-- `key`：篩選值，`all` 表示全部，其餘需對應 `models[].kind`
-- `label`：畫面顯示文字
+詳細頁：
 
-### `overview.sort_options`
+| 欄位／指標 | 用途 |
+|---|---|
+| NDCG@K | 評估推薦順序是否把較重要的選項排在前面。 |
+| Precision@K | 評估前 K 個推薦中有多少是有效推薦。 |
+| Recall@K | 所有應被推薦的項目中，有多少出現在前 K 個結果內。 |
+| MAP@K | 綜合多次推薦結果的平均排序精準度，用來比較不同模型版本。 |
+| 採用率 | 顯示推薦被實際採用的比例。 |
+| 執行成功率 | 顯示推薦服務是否成功完成推論與輸出流程。 |
+| Guardrail 攔截率 | 推薦結果因安全或操作限制而被攔截的比例；過高可能表示模型輸出不符合現場限制。 |
+| 無效推薦率 | 無法執行、資料不足或不符合需求的推薦比例。越低越好。 |
+| P95 Latency | 95% 的請求可在此時間內完成，用來監控較慢請求的延遲。 |
+| 推薦執行次數 | 顯示評估期間的推薦樣本量，避免在樣本過少時誤判其他比例。 |
+| 節省能耗／節省成本 | 顯示推薦被採用後帶來的實際營運效益。 |
+| Recommendation Uplift | 比較採用推薦和未採用推薦時的成效差異。 |
+| 排序品質趨勢圖 | 觀察 NDCG@K、Precision@K、Recall@K 是否隨時間下降。 |
+| 採用率／成功率／延遲圖 | 分別檢查推薦是否被接受、服務是否穩定，以及回應速度是否惡化。 |
 
-對應總覽頁右上排序選單。前端會直接依照這個陣列產生 select option。
+### 共用資料品質
 
-- `key`：排序欄位識別，目前支援 `model_id`、`kind`、`status`、`metric`、`skill`、`drift`、`lastEval`
-- `label`：畫面顯示文字
+| 欄位／指標 | 用途 |
+|---|---|
+| PSI | 檢查整體或單一特徵的資料分布是否漂移。 |
+| 缺失率 | 顯示輸入資料缺值比例；過高可能讓模型指標下降或無法推論。 |
+| 資料覆蓋率 | 顯示預期資料中實際可使用的比例。 |
+| 資料新鮮度 | 顯示最新資料距離目前時間多久，用來發現資料管線延遲。 |
+| KS p-value | 判斷目前資料與基準資料是否有顯著分布差異；數值越低，差異通常越明顯。 |
+| Entropy | 觀察類別資料的分散程度，協助發現類別比例過度集中或突然改變。 |
 
-### `overview.columns_by_kind`
+這個 demo 是純前端模型監控儀表板。模型、站點、指標、資料品質與圖表資料都集中在 `data.json`，`index.html` 不保存模型數值。
 
-對應 Site 內不同 model kind 的表格欄位。
+前端載入方式：
 
-- `forecast`
-- `anomaly`
-- `recommender`
+```js
+fetch("./data.json")
+```
 
-### `overview.critical_models`
+資料流：
 
-對應總覽頁「嚴重模型」區塊。
+```text
+模型端計算指標與圖表數列
+  -> 輸出 data.json
+  -> 前端讀取 JSON
+  -> 前端排版並繪製圖表
+```
 
-## 單一模型詳細頁
+前端不計算 MAE、WAPE、F1、PSI、Health Status 或圖表統計值，只負責格式化與顯示。
 
-所有模型詳細資料都放在 `models[]`。
+## 啟動
 
-### 共用欄位
+瀏覽器使用 `fetch` 讀取 JSON，因此請透過 HTTP server 開啟：
 
-- `id`：Model ID
-- `kind`：`forecast` / `anomaly` / `recommender`
-- `model_kind`：模型種類與演算法
-- `site_id`：Site ID
-- `site_name`：Site 名稱
-- `model_version`：模型版本
-- `health_status`：詳細頁 Health Status
-- `last_evaluated`：總覽頁顯示的最後時間
-- `service_info`：服務資訊區塊
-- `metric_cards`：核心指標卡片
-- `charts`：圖表資料
-- `feature_drift`：輸入特徵漂移監測表
+```bash
+python3 -m http.server 8000
+```
 
-## Forecast 詳細頁
+瀏覽：
 
-Forecast model 使用：
+```text
+http://localhost:8000/
+```
 
-- `target_point`
-- `evaluated_at`
-- `evaluation_period`
-- `overview.mape`
-- `overview.skill_score`
-- `overview.drift`
-- `metric_cards`
-  - MAE
-  - MAPE
-  - Baseline MAPE
-  - Skill Score
-  - 評測覆蓋率
-- `charts`
-  - `forecast_metrics_trend`
-  - `actual_prediction_baseline`
-- `evaluation_data_quality`
-  - `prediction_count`
-  - `actual_count`
-  - `joined_rows`
-  - `excluded_actual_rows`
+直接用 `file://` 開啟可能會被瀏覽器阻擋。
 
-## Anomaly 詳細頁
+## 命名規則
 
-Anomaly model 使用：
+- 所有 JSON key 使用 `snake_case`。
+- `label`、`title`、`name` 是畫面文字，可以保留 `R²`、`PR-AUC`、`NDCG@K` 等正式名稱。
+- JSON 不是 Python Class，因此不使用 PascalCase key。
 
-- `target_point`
-- `evaluated_at`
-- `evaluation_period`
-- `overview.events`
-- `overview.anomaly_rate`
-- `overview.score_p99`
-- `metric_cards`
-  - 異常事件數
-  - 異常率
-  - Score P99
-  - Threshold
-  - 評測覆蓋率
-- `secondary_metrics`
-  - 有 `labeled_rows > 0` 才顯示
-  - Precision
-  - Recall
-  - F1-score
-- `charts`
-  - `anomaly_metrics_trend`
-  - `anomaly_score_trend`
-- `scoring_stats`
-  - `scored_rows`
-  - `valid_rows`
-  - `excluded_rows`
-  - `labeled_rows`
+## 狀態點顯示
 
-## Recommender 詳細頁
+模型狀態只顯示圓點，放在 `Model ID` 前方，不另外占用 `Health Status` 欄位：
 
-Recommender model 使用：
+- 綠點：Normal
+- 黃點：Warning
+- 紅點：Critical
+- 灰點：未知值
 
-- `target_scope`
-- `target_scope_points`
-- `statistics_updated_at`
-- `statistics_period`
-- `overview.success_rate`
-- `overview.p95_latency`
-- `overview.guardrail_rate`
-- `metric_cards`
-  - 執行成功率
-  - 採用率
-  - Guardrail 攔截率
-  - P95 Latency
-- `charts`
-  - `recommender_metrics_trend`
-  - `recommender_latency_trend`
-- `execution_stats`
-  - `total_runs`
-  - `successful_runs`
-  - `failed_runs`
-  - `guardrail_blocked_runs`
-  - `adopted_runs`
+狀態文字只放在 `title` 與 `aria-label`，不占用表格欄位空間。
 
-## 圖表資料格式
+Site 名稱前的圓點由前端檢查該 Site 的全部模型後，取最嚴重的狀態：
 
-每個 `charts[]` 物件都包含：
+```text
+critical > warning > normal > unknown
+```
 
-- `id`：圖表識別
-- `title`：圖表標題
-- `subtitle`：副標題
-- `type`：`bar` 或 `line`
-- `default_metric`：左側可切換圖的預設指標
-- `x_axis`：時間軸
-- `series`：圖表資料序列
+Site 狀態不受搜尋或模型種類篩選影響。
 
-每個 `series[]` 包含：
+## 模型詳細頁
 
-- `name`：序列名稱
-- `unit`：可選，數值單位
-- `values`：數值陣列
+每個模型使用三組 JSON 指標：
 
-`x_axis.length` 必須等於每個 `series.values.length`。
+- `detail_metrics.core`：詳細頁核心指標卡。
+- `detail_metrics.secondary`：次要與診斷指標。
+- `data_quality_metrics`：PSI、缺失率、覆蓋率、資料新鮮度等。
 
-### 前端圖表對應規則
+單一指標格式：
 
-詳細頁有兩張 SVG 圖：
+```json
+{
+  "key": "wape",
+  "label": "WAPE",
+  "value": 12.4,
+  "unit": "%",
+  "status": "warning",
+  "tooltip": "可選說明"
+}
+```
 
-- 第一張趨勢圖：讀取 `charts[]` 中 `type: "bar"` 的圖表。
-- 第二張比較／趨勢圖：讀取 `charts[]` 中 `type: "line"` 的圖表。
+規則：
 
-`type: "bar"` 的 `series[].name` 會成為圖表右上 segmented control 的切換按鈕。初始選中的指標使用該 chart 的 `default_metric`；如果沒有設定，前端會使用第一個 `series`。
+- `value` 可以是數字、字串或 `null`。
+- `value: null` 顯示為 `--`。
+- `status` 可使用 `normal`、`warning`、`critical`。
+- 未提供 `status` 時使用中性色。
+- 指標門檻由模型端決定，前端不重新判斷。
 
-`type: "line"` 的 `series[]` 會依序對應折線：
+## 圖表
 
-- 第 1 條：藍色實線
-- 第 2 條：紅色實線
-- 第 3 條：灰色虛線
+每個模型的圖表都放在 `models[].charts[]`，前端依 `type` 動態建立圖表卡，不限制圖表數量。
 
-折線圖 legend 直接使用 `series[].name`。如果只有一條線，例如 Recommender 的 `P95 Latency`，只會畫出第一條線。
+支援：
 
-兩張圖底部日期標籤都來自各自 chart 的 `x_axis`。前端只抽取起點、中間點與終點顯示，不會自行產生日期。
+- `line`
+- `bar`
+- `confusion_matrix`
+- `histogram`
 
-### 更新圖表資料的方式
+`line` 與 `bar` 的 `x_axis.length` 必須等於每個 `series.values.length`。缺值使用 `null`；折線會顯示斷點，不會自動補成 `0`。
 
-要改圖表，只需要修改對應 model 的 `charts[]`：
-
-1. 找到 `models[].id`。
-2. 修改 `type: "bar"` 或 `type: "line"` 的 `x_axis`。
-3. 修改該 chart 的 `series[].values`。
-4. 確認每個 `series.values.length` 都等於 `x_axis.length`。
-
-不需要修改 `index.html`，除非要改畫法、互動或版面。
+圖表格式與三類模型的完整資料契約請看 [model-data-contract.md](./model-data-contract.md)。

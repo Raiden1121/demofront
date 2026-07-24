@@ -64,7 +64,6 @@
     {
       "id": "site_tpe_chw_01",
       "name": "台北冰水主機房",
-      "health_status": "Warning",
       "stats": {
         "total": 3,
         "normal": 2,
@@ -75,7 +74,6 @@
     {
       "id": "site_txg_hvac_02",
       "name": "台中空調機房",
-      "health_status": "Critical",
       "stats": {
         "total": 2,
         "normal": 1,
@@ -86,7 +84,6 @@
     {
       "id": "site_khh_energy_03",
       "name": "高雄能源中心",
-      "health_status": "Critical",
       "stats": {
         "total": 2,
         "normal": 1,
@@ -146,31 +143,22 @@
     ],
     "columns_by_kind": {
       "forecast": [
-        "Model ID",
-        "Target Point",
-        "Health Status",
-        "MAPE",
-        "Skill Score",
-        "Drift",
-        "Last Evaluated"
+        "WAPE",
+        "R²",
+        "RMSE",
+        "PSI"
       ],
       "anomaly": [
-        "Model ID",
-        "Target Point",
-        "Health Status",
-        "Events",
-        "Anomaly Rate",
-        "Score P99",
-        "Last Evaluated"
+        "F1 Score",
+        "Recall",
+        "PR-AUC",
+        "PSI"
       ],
       "recommender": [
-        "Model ID",
-        "Target / Scope",
-        "Health Status",
-        "Success Rate",
-        "P95 Latency",
-        "Guardrail Rate",
-        "Last Evaluated"
+        "NDCG@K",
+        "Precision@K",
+        "採用率",
+        "PSI"
       ]
     },
     "critical_models": [
@@ -202,15 +190,9 @@
       "target_point": "plant.chw_supply_temp",
       "model_version": "v2.8.4",
       "health_status": "Warning",
-      "drift_status": "Warning",
       "last_evaluated": "07-15 14:30",
       "evaluated_at": "2024-07-15 14:30:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
-      "overview": {
-        "mape": "12.4%",
-        "skill_score": "+38.3%",
-        "drift": "Normal"
-      },
       "service_info": {
         "online": "Online",
         "last_successful_run_at": "2024-07-15 14:30:00",
@@ -219,34 +201,6 @@
         "p95_latency": "180 ms",
         "deployed_at": "2024-07-08 10:30:00"
       },
-      "metric_cards": [
-        {
-          "label": "MAE",
-          "value": "18.6 kW",
-          "tone": "ok"
-        },
-        {
-          "label": "MAPE",
-          "value": "12.4%",
-          "tone": "ok"
-        },
-        {
-          "label": "Baseline MAPE",
-          "value": "20.1%",
-          "tone": "ok"
-        },
-        {
-          "label": "Skill Score",
-          "value": "+38.3%",
-          "tone": "ok",
-          "formula": "1 - 12.4 / 20.1"
-        },
-        {
-          "label": "評測覆蓋率",
-          "value": "97.1%",
-          "tone": "ok"
-        }
-      ],
       "charts": [
         {
           "id": "forecast_metrics_trend",
@@ -433,12 +387,149 @@
           "status": "Normal"
         }
       ],
-      "evaluation_data_quality": {
-        "prediction_count": 12880,
-        "actual_count": 12764,
-        "joined_rows": 12502,
-        "excluded_actual_rows": 262
-      }
+      "overview_metrics": [
+        {
+          "key": "wape",
+          "label": "WAPE",
+          "value": 6.8,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "r_squared",
+          "label": "R²",
+          "value": 0.93,
+          "unit": "",
+          "status": "normal"
+        },
+        {
+          "key": "rmse",
+          "label": "RMSE",
+          "value": 0.58,
+          "unit": "°C",
+          "status": "normal"
+        },
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.12,
+          "unit": "",
+          "status": "warning"
+        }
+      ],
+      "detail_metrics": {
+        "core": [
+          {
+            "key": "mae",
+            "label": "MAE",
+            "value": 0.42,
+            "unit": "°C",
+            "status": "normal"
+          },
+          {
+            "key": "rmse",
+            "label": "RMSE",
+            "value": 0.58,
+            "unit": "°C",
+            "status": "normal"
+          },
+          {
+            "key": "wape",
+            "label": "WAPE",
+            "value": 6.8,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "r_squared",
+            "label": "R²",
+            "value": 0.93,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "evaluation_coverage",
+            "label": "評測覆蓋率",
+            "value": 97.1,
+            "unit": "%",
+            "status": "normal"
+          }
+        ],
+        "secondary": [
+          {
+            "key": "mape",
+            "label": "MAPE",
+            "value": 12.4,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "smape",
+            "label": "SMAPE",
+            "value": 7.1,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "bias",
+            "label": "Bias",
+            "value": -0.08,
+            "unit": "°C",
+            "status": "normal"
+          },
+          {
+            "key": "baseline_wape",
+            "label": "Baseline WAPE",
+            "value": 11.2,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "skill_score",
+            "label": "Skill Score",
+            "value": 39.3,
+            "unit": "%",
+            "status": "normal"
+          }
+        ]
+      },
+      "data_quality_metrics": [
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.12,
+          "unit": "",
+          "status": "warning"
+        },
+        {
+          "key": "missing_rate",
+          "label": "缺失率",
+          "value": 0.9,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "data_coverage",
+          "label": "資料覆蓋率",
+          "value": 97.1,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "data_freshness",
+          "label": "資料新鮮度",
+          "value": 4,
+          "unit": "min",
+          "status": "normal"
+        },
+        {
+          "key": "ks_p_value",
+          "label": "KS p-value",
+          "value": 0.08,
+          "unit": "",
+          "status": "normal"
+        }
+      ]
     },
     {
       "id": "predict.chiller_power_01",
@@ -450,15 +541,9 @@
       "target_point": "plant.chiller_power_kw",
       "model_version": "v3.2.1",
       "health_status": "Critical",
-      "drift_status": "Critical",
       "last_evaluated": "07-15 14:08",
       "evaluated_at": "2024-07-15 14:08:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
-      "overview": {
-        "mape": "31.5%",
-        "skill_score": "-6.4%",
-        "drift": "Critical"
-      },
       "service_info": {
         "online": "Offline",
         "last_successful_run_at": "2024-07-15 13:42:10",
@@ -467,33 +552,6 @@
         "p95_latency": "840 ms",
         "deployed_at": "2024-07-08 10:30:00"
       },
-      "metric_cards": [
-        {
-          "label": "MAE",
-          "value": "84.2 kW",
-          "tone": "bad"
-        },
-        {
-          "label": "MAPE",
-          "value": "31.5%",
-          "tone": "bad"
-        },
-        {
-          "label": "Baseline MAPE",
-          "value": "17.6%",
-          "tone": "warn"
-        },
-        {
-          "label": "Skill Score",
-          "value": "-6.4%",
-          "tone": "bad"
-        },
-        {
-          "label": "評測覆蓋率",
-          "value": "92.1%",
-          "tone": "warn"
-        }
-      ],
       "charts": [
         {
           "id": "forecast_metrics_trend",
@@ -687,12 +745,149 @@
           "status": "Warning"
         }
       ],
-      "evaluation_data_quality": {
-        "prediction_count": 18420,
-        "actual_count": 18001,
-        "joined_rows": 16972,
-        "excluded_actual_rows": 1029
-      }
+      "overview_metrics": [
+        {
+          "key": "wape",
+          "label": "WAPE",
+          "value": 28.9,
+          "unit": "%",
+          "status": "critical"
+        },
+        {
+          "key": "r_squared",
+          "label": "R²",
+          "value": 0.42,
+          "unit": "",
+          "status": "critical"
+        },
+        {
+          "key": "rmse",
+          "label": "RMSE",
+          "value": 112.6,
+          "unit": "kW",
+          "status": "critical"
+        },
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.31,
+          "unit": "",
+          "status": "critical"
+        }
+      ],
+      "detail_metrics": {
+        "core": [
+          {
+            "key": "mae",
+            "label": "MAE",
+            "value": 84.2,
+            "unit": "kW",
+            "status": "critical"
+          },
+          {
+            "key": "rmse",
+            "label": "RMSE",
+            "value": 112.6,
+            "unit": "kW",
+            "status": "critical"
+          },
+          {
+            "key": "wape",
+            "label": "WAPE",
+            "value": 28.9,
+            "unit": "%",
+            "status": "critical"
+          },
+          {
+            "key": "r_squared",
+            "label": "R²",
+            "value": 0.42,
+            "unit": "",
+            "status": "critical"
+          },
+          {
+            "key": "evaluation_coverage",
+            "label": "評測覆蓋率",
+            "value": 92.1,
+            "unit": "%",
+            "status": "warning"
+          }
+        ],
+        "secondary": [
+          {
+            "key": "mape",
+            "label": "MAPE",
+            "value": 31.5,
+            "unit": "%",
+            "status": "critical"
+          },
+          {
+            "key": "smape",
+            "label": "SMAPE",
+            "value": 29.7,
+            "unit": "%",
+            "status": "critical"
+          },
+          {
+            "key": "bias",
+            "label": "Bias",
+            "value": -37.4,
+            "unit": "kW",
+            "status": "critical"
+          },
+          {
+            "key": "baseline_wape",
+            "label": "Baseline WAPE",
+            "value": 17.6,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "skill_score",
+            "label": "Skill Score",
+            "value": -64.2,
+            "unit": "%",
+            "status": "critical"
+          }
+        ]
+      },
+      "data_quality_metrics": [
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.31,
+          "unit": "",
+          "status": "critical"
+        },
+        {
+          "key": "missing_rate",
+          "label": "缺失率",
+          "value": 2.3,
+          "unit": "%",
+          "status": "warning"
+        },
+        {
+          "key": "data_coverage",
+          "label": "資料覆蓋率",
+          "value": 92.1,
+          "unit": "%",
+          "status": "warning"
+        },
+        {
+          "key": "data_freshness",
+          "label": "資料新鮮度",
+          "value": 18,
+          "unit": "min",
+          "status": "warning"
+        },
+        {
+          "key": "ks_p_value",
+          "label": "KS p-value",
+          "value": 0.01,
+          "unit": "",
+          "status": "critical"
+        }
+      ]
     },
     {
       "id": "predict.energy_load_03",
@@ -703,15 +898,9 @@
       "target_point": "meter.energy_load",
       "model_version": "v3.0.2",
       "health_status": "Warning",
-      "drift_status": "Warning",
       "last_evaluated": "07-15 14:10",
       "evaluated_at": "2024-07-15 14:10:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
-      "overview": {
-        "mape": "15.8%",
-        "skill_score": "+12.3%",
-        "drift": "Normal"
-      },
       "service_info": {
         "online": "Online",
         "last_successful_run_at": "2024-07-15 14:10:00",
@@ -720,34 +909,6 @@
         "p95_latency": "180 ms",
         "deployed_at": "2024-07-08 10:30:00"
       },
-      "metric_cards": [
-        {
-          "label": "MAE",
-          "value": "18.6 kW",
-          "tone": "ok"
-        },
-        {
-          "label": "MAPE",
-          "value": "15.8%",
-          "tone": "ok"
-        },
-        {
-          "label": "Baseline MAPE",
-          "value": "20.1%",
-          "tone": "ok"
-        },
-        {
-          "label": "Skill Score",
-          "value": "+21.4%",
-          "tone": "ok",
-          "formula": "1 - 15.8 / 20.1"
-        },
-        {
-          "label": "評測覆蓋率",
-          "value": "97.1%",
-          "tone": "ok"
-        }
-      ],
       "charts": [
         {
           "id": "forecast_metrics_trend",
@@ -934,12 +1095,149 @@
           "status": "Normal"
         }
       ],
-      "evaluation_data_quality": {
-        "prediction_count": 12880,
-        "actual_count": 12764,
-        "joined_rows": 12502,
-        "excluded_actual_rows": 262
-      }
+      "overview_metrics": [
+        {
+          "key": "wape",
+          "label": "WAPE",
+          "value": 14.7,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "r_squared",
+          "label": "R²",
+          "value": 0.86,
+          "unit": "",
+          "status": "normal"
+        },
+        {
+          "key": "rmse",
+          "label": "RMSE",
+          "value": 25.3,
+          "unit": "kW",
+          "status": "normal"
+        },
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.08,
+          "unit": "",
+          "status": "normal"
+        }
+      ],
+      "detail_metrics": {
+        "core": [
+          {
+            "key": "mae",
+            "label": "MAE",
+            "value": 18.6,
+            "unit": "kW",
+            "status": "normal"
+          },
+          {
+            "key": "rmse",
+            "label": "RMSE",
+            "value": 25.3,
+            "unit": "kW",
+            "status": "normal"
+          },
+          {
+            "key": "wape",
+            "label": "WAPE",
+            "value": 14.7,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "r_squared",
+            "label": "R²",
+            "value": 0.86,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "evaluation_coverage",
+            "label": "評測覆蓋率",
+            "value": 97.1,
+            "unit": "%",
+            "status": "normal"
+          }
+        ],
+        "secondary": [
+          {
+            "key": "mape",
+            "label": "MAPE",
+            "value": 15.8,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "smape",
+            "label": "SMAPE",
+            "value": 15.1,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "bias",
+            "label": "Bias",
+            "value": 3.2,
+            "unit": "kW",
+            "status": "normal"
+          },
+          {
+            "key": "baseline_wape",
+            "label": "Baseline WAPE",
+            "value": 20.1,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "skill_score",
+            "label": "Skill Score",
+            "value": 26.9,
+            "unit": "%",
+            "status": "normal"
+          }
+        ]
+      },
+      "data_quality_metrics": [
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.08,
+          "unit": "",
+          "status": "normal"
+        },
+        {
+          "key": "missing_rate",
+          "label": "缺失率",
+          "value": 0.9,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "data_coverage",
+          "label": "資料覆蓋率",
+          "value": 97.1,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "data_freshness",
+          "label": "資料新鮮度",
+          "value": 5,
+          "unit": "min",
+          "status": "normal"
+        },
+        {
+          "key": "ks_p_value",
+          "label": "KS p-value",
+          "value": 0.12,
+          "unit": "",
+          "status": "normal"
+        }
+      ]
     },
     {
       "id": "anomaly.chw_temp_01",
@@ -953,11 +1251,6 @@
       "last_evaluated": "07-15 14:25",
       "evaluated_at": "2024-07-15 14:25:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
-      "overview": {
-        "events": "48 events",
-        "anomaly_rate": "3.2%",
-        "score_p99": "0.78"
-      },
       "service_info": {
         "online": "Online",
         "last_successful_run_at": "2024-07-15 14:25:00",
@@ -965,56 +1258,6 @@
         "error_rate": "3.6%",
         "p95_latency": "430 ms",
         "deployed_at": "2024-07-08 10:30:00"
-      },
-      "metric_cards": [
-        {
-          "label": "異常事件數",
-          "value": "48",
-          "tone": "warn"
-        },
-        {
-          "label": "異常率",
-          "value": "3.2%",
-          "tone": "warn",
-          "formula": "48 / 1500"
-        },
-        {
-          "label": "Score P99",
-          "value": "0.78",
-          "tone": "warn"
-        },
-        {
-          "label": "Threshold",
-          "value": "0.70",
-          "tone": "ok"
-        },
-        {
-          "label": "評測覆蓋率",
-          "value": "97.8%",
-          "tone": "ok",
-          "formula": "1500 / 1534"
-        }
-      ],
-      "secondary_metrics": {
-        "title": "標註資料評測",
-        "labeled_rows": 1460,
-        "metrics": [
-          {
-            "label": "Precision",
-            "value": "92.4%",
-            "tone": "ok"
-          },
-          {
-            "label": "Recall",
-            "value": "88.1%",
-            "tone": "ok"
-          },
-          {
-            "label": "F1-score",
-            "value": "90.2%",
-            "tone": "ok"
-          }
-        ]
       },
       "charts": [
         {
@@ -1180,6 +1423,78 @@
               ]
             }
           ]
+        },
+        {
+          "id": "confusion_matrix",
+          "type": "confusion_matrix",
+          "title": "混淆矩陣",
+          "subtitle": "實際標籤與模型判斷結果",
+          "x_axis": [
+            "Predicted Normal",
+            "Predicted Anomaly"
+          ],
+          "y_axis": [
+            "Actual Normal",
+            "Actual Anomaly"
+          ],
+          "matrix": [
+            [
+              1412,
+              7
+            ],
+            [
+              5,
+              36
+            ]
+          ]
+        },
+        {
+          "id": "anomaly_score_distribution",
+          "type": "histogram",
+          "title": "異常分數分布",
+          "subtitle": "Anomaly Score 分箱計數",
+          "bins": [
+            {
+              "start": 0,
+              "end": 0.1,
+              "count": 510
+            },
+            {
+              "start": 0.1,
+              "end": 0.2,
+              "count": 424
+            },
+            {
+              "start": 0.2,
+              "end": 0.3,
+              "count": 278
+            },
+            {
+              "start": 0.3,
+              "end": 0.4,
+              "count": 166
+            },
+            {
+              "start": 0.4,
+              "end": 0.5,
+              "count": 72
+            },
+            {
+              "start": 0.5,
+              "end": 0.6,
+              "count": 32
+            },
+            {
+              "start": 0.6,
+              "end": 0.7,
+              "count": 12
+            },
+            {
+              "start": 0.7,
+              "end": 0.8,
+              "count": 6
+            }
+          ]
         }
       ],
       "feature_drift": [
@@ -1212,12 +1527,191 @@
           "status": "Normal"
         }
       ],
-      "scoring_stats": {
-        "scored_rows": 1534,
-        "valid_rows": 1500,
-        "excluded_rows": 34,
-        "labeled_rows": 1460
-      }
+      "overview_metrics": [
+        {
+          "key": "f1_score",
+          "label": "F1 Score",
+          "value": 90.2,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "recall",
+          "label": "Recall",
+          "value": 88.1,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "pr_auc",
+          "label": "PR-AUC",
+          "value": 0.91,
+          "unit": "",
+          "status": "normal"
+        },
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.14,
+          "unit": "",
+          "status": "warning"
+        }
+      ],
+      "detail_metrics": {
+        "core": [
+          {
+            "key": "f1_score",
+            "label": "F1 Score",
+            "value": 90.2,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "precision",
+            "label": "Precision",
+            "value": 92.4,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "recall",
+            "label": "Recall",
+            "value": 88.1,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "pr_auc",
+            "label": "PR-AUC",
+            "value": 0.91,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "evaluation_coverage",
+            "label": "評測覆蓋率",
+            "value": 97.8,
+            "unit": "%",
+            "status": "normal"
+          }
+        ],
+        "secondary": [
+          {
+            "key": "roc_auc",
+            "label": "ROC-AUC",
+            "value": 0.94,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "false_positive_rate",
+            "label": "誤報率",
+            "value": 1.4,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "false_negative_rate",
+            "label": "漏報率",
+            "value": 11.9,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "anomaly_event_count",
+            "label": "異常事件數",
+            "value": 48,
+            "unit": "",
+            "status": "warning"
+          },
+          {
+            "key": "anomaly_rate",
+            "label": "異常率",
+            "value": 3.2,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "threshold",
+            "label": "Threshold",
+            "value": 0.7,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "score_p95",
+            "label": "Score P95",
+            "value": 0.66,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "score_p99",
+            "label": "Score P99",
+            "value": 0.78,
+            "unit": "",
+            "status": "warning"
+          },
+          {
+            "key": "brier_score",
+            "label": "Brier Score",
+            "value": null,
+            "unit": "",
+            "tooltip": "僅適用於輸出分類機率的模型"
+          },
+          {
+            "key": "ece",
+            "label": "ECE",
+            "value": null,
+            "unit": "",
+            "tooltip": "僅適用於輸出分類機率的模型"
+          },
+          {
+            "key": "log_loss",
+            "label": "Log Loss",
+            "value": null,
+            "unit": "",
+            "tooltip": "僅適用於輸出分類機率的模型"
+          }
+        ]
+      },
+      "data_quality_metrics": [
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.14,
+          "unit": "",
+          "status": "warning"
+        },
+        {
+          "key": "missing_rate",
+          "label": "缺失率",
+          "value": 2.2,
+          "unit": "%",
+          "status": "warning"
+        },
+        {
+          "key": "data_coverage",
+          "label": "資料覆蓋率",
+          "value": 97.8,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "data_freshness",
+          "label": "資料新鮮度",
+          "value": 3,
+          "unit": "min",
+          "status": "normal"
+        },
+        {
+          "key": "ks_p_value",
+          "label": "KS p-value",
+          "value": 0.04,
+          "unit": "",
+          "status": "warning"
+        }
+      ]
     },
     {
       "id": "anomaly.ct_water_temp_01",
@@ -1231,11 +1725,6 @@
       "last_evaluated": "07-15 14:12",
       "evaluated_at": "2024-07-15 14:12:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
-      "overview": {
-        "events": "126 events",
-        "anomaly_rate": "7.8%",
-        "score_p99": "0.94"
-      },
       "service_info": {
         "online": "Offline",
         "last_successful_run_at": "2024-07-15 13:42:10",
@@ -1244,36 +1733,6 @@
         "p95_latency": "840 ms",
         "deployed_at": "2024-07-08 10:30:00"
       },
-      "metric_cards": [
-        {
-          "label": "異常事件數",
-          "value": "126",
-          "tone": "bad"
-        },
-        {
-          "label": "異常率",
-          "value": "7.8%",
-          "tone": "bad",
-          "formula": "126 / 1615"
-        },
-        {
-          "label": "Score P99",
-          "value": "0.94",
-          "tone": "bad"
-        },
-        {
-          "label": "Threshold",
-          "value": "0.70",
-          "tone": "ok"
-        },
-        {
-          "label": "評測覆蓋率",
-          "value": "97.2%",
-          "tone": "warn",
-          "formula": "1615 / 1662"
-        }
-      ],
-      "secondary_metrics": null,
       "charts": [
         {
           "id": "anomaly_metrics_trend",
@@ -1438,6 +1897,78 @@
               ]
             }
           ]
+        },
+        {
+          "id": "confusion_matrix",
+          "type": "confusion_matrix",
+          "title": "混淆矩陣",
+          "subtitle": "實際標籤與模型判斷結果",
+          "x_axis": [
+            "Predicted Normal",
+            "Predicted Anomaly"
+          ],
+          "y_axis": [
+            "Actual Normal",
+            "Actual Anomaly"
+          ],
+          "matrix": [
+            [
+              1414,
+              28
+            ],
+            [
+              37,
+              80
+            ]
+          ]
+        },
+        {
+          "id": "anomaly_score_distribution",
+          "type": "histogram",
+          "title": "異常分數分布",
+          "subtitle": "Anomaly Score 分箱計數",
+          "bins": [
+            {
+              "start": 0,
+              "end": 0.1,
+              "count": 446
+            },
+            {
+              "start": 0.1,
+              "end": 0.2,
+              "count": 380
+            },
+            {
+              "start": 0.2,
+              "end": 0.3,
+              "count": 302
+            },
+            {
+              "start": 0.3,
+              "end": 0.4,
+              "count": 210
+            },
+            {
+              "start": 0.4,
+              "end": 0.5,
+              "count": 132
+            },
+            {
+              "start": 0.5,
+              "end": 0.6,
+              "count": 76
+            },
+            {
+              "start": 0.6,
+              "end": 0.7,
+              "count": 43
+            },
+            {
+              "start": 0.7,
+              "end": 0.8,
+              "count": 26
+            }
+          ]
         }
       ],
       "feature_drift": [
@@ -1470,12 +2001,191 @@
           "status": "Normal"
         }
       ],
-      "scoring_stats": {
-        "scored_rows": 1662,
-        "valid_rows": 1615,
-        "excluded_rows": 47,
-        "labeled_rows": 0
-      }
+      "overview_metrics": [
+        {
+          "key": "f1_score",
+          "label": "F1 Score",
+          "value": 72.8,
+          "unit": "%",
+          "status": "critical"
+        },
+        {
+          "key": "recall",
+          "label": "Recall",
+          "value": 68.4,
+          "unit": "%",
+          "status": "critical"
+        },
+        {
+          "key": "pr_auc",
+          "label": "PR-AUC",
+          "value": 0.74,
+          "unit": "",
+          "status": "critical"
+        },
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.29,
+          "unit": "",
+          "status": "critical"
+        }
+      ],
+      "detail_metrics": {
+        "core": [
+          {
+            "key": "f1_score",
+            "label": "F1 Score",
+            "value": 72.8,
+            "unit": "%",
+            "status": "critical"
+          },
+          {
+            "key": "precision",
+            "label": "Precision",
+            "value": 77.9,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "recall",
+            "label": "Recall",
+            "value": 68.4,
+            "unit": "%",
+            "status": "critical"
+          },
+          {
+            "key": "pr_auc",
+            "label": "PR-AUC",
+            "value": 0.74,
+            "unit": "",
+            "status": "critical"
+          },
+          {
+            "key": "evaluation_coverage",
+            "label": "評測覆蓋率",
+            "value": 97.2,
+            "unit": "%",
+            "status": "warning"
+          }
+        ],
+        "secondary": [
+          {
+            "key": "roc_auc",
+            "label": "ROC-AUC",
+            "value": 0.82,
+            "unit": "",
+            "status": "warning"
+          },
+          {
+            "key": "false_positive_rate",
+            "label": "誤報率",
+            "value": 4.8,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "false_negative_rate",
+            "label": "漏報率",
+            "value": 31.6,
+            "unit": "%",
+            "status": "critical"
+          },
+          {
+            "key": "anomaly_event_count",
+            "label": "異常事件數",
+            "value": 126,
+            "unit": "",
+            "status": "critical"
+          },
+          {
+            "key": "anomaly_rate",
+            "label": "異常率",
+            "value": 7.8,
+            "unit": "%",
+            "status": "critical"
+          },
+          {
+            "key": "threshold",
+            "label": "Threshold",
+            "value": 0.7,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "score_p95",
+            "label": "Score P95",
+            "value": 0.81,
+            "unit": "",
+            "status": "warning"
+          },
+          {
+            "key": "score_p99",
+            "label": "Score P99",
+            "value": 0.94,
+            "unit": "",
+            "status": "critical"
+          },
+          {
+            "key": "brier_score",
+            "label": "Brier Score",
+            "value": null,
+            "unit": "",
+            "tooltip": "僅適用於輸出分類機率的模型"
+          },
+          {
+            "key": "ece",
+            "label": "ECE",
+            "value": null,
+            "unit": "",
+            "tooltip": "僅適用於輸出分類機率的模型"
+          },
+          {
+            "key": "log_loss",
+            "label": "Log Loss",
+            "value": null,
+            "unit": "",
+            "tooltip": "僅適用於輸出分類機率的模型"
+          }
+        ]
+      },
+      "data_quality_metrics": [
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.29,
+          "unit": "",
+          "status": "critical"
+        },
+        {
+          "key": "missing_rate",
+          "label": "缺失率",
+          "value": 2.8,
+          "unit": "%",
+          "status": "warning"
+        },
+        {
+          "key": "data_coverage",
+          "label": "資料覆蓋率",
+          "value": 97.2,
+          "unit": "%",
+          "status": "warning"
+        },
+        {
+          "key": "data_freshness",
+          "label": "資料新鮮度",
+          "value": 22,
+          "unit": "min",
+          "status": "warning"
+        },
+        {
+          "key": "ks_p_value",
+          "label": "KS p-value",
+          "value": 0.01,
+          "unit": "",
+          "status": "critical"
+        }
+      ]
     },
     {
       "id": "recommender.setpoint_01",
@@ -1492,41 +2202,11 @@
       "last_evaluated": "07-15 14:20",
       "statistics_updated_at": "2024-07-15 14:20:00",
       "statistics_period": "2024-07-01 ~ 2024-07-15",
-      "overview": {
-        "success_rate": "99.2%",
-        "p95_latency": "190",
-        "guardrail_rate": "3.1%"
-      },
       "service_info": {
         "online": "Online",
         "last_successful_run_at": "2024-07-15 14:20:00",
         "deployed_at": "2024-07-10 09:20:00"
       },
-      "metric_cards": [
-        {
-          "label": "執行成功率",
-          "value": "99.2%",
-          "tone": "ok",
-          "formula": "2397 / 2416"
-        },
-        {
-          "label": "採用率",
-          "value": "66.6%",
-          "tone": "ok",
-          "formula": "1608 / 2416"
-        },
-        {
-          "label": "Guardrail 攔截率",
-          "value": "3.1%",
-          "tone": "warn",
-          "formula": "75 / 2416"
-        },
-        {
-          "label": "P95 Latency",
-          "value": "190",
-          "tone": "ok"
-        }
-      ],
       "charts": [
         {
           "id": "recommender_metrics_trend",
@@ -1687,13 +2367,167 @@
           "status": "Normal"
         }
       ],
-      "execution_stats": {
-        "total_runs": 2416,
-        "successful_runs": 2397,
-        "failed_runs": 19,
-        "guardrail_blocked_runs": 75,
-        "adopted_runs": 1608
-      }
+      "overview_metrics": [
+        {
+          "key": "ndcg_at_k",
+          "label": "NDCG@K",
+          "value": 0.88,
+          "unit": "",
+          "status": "normal"
+        },
+        {
+          "key": "precision_at_k",
+          "label": "Precision@K",
+          "value": 82.4,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "adoption_rate",
+          "label": "採用率",
+          "value": 66.6,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.11,
+          "unit": "",
+          "status": "warning"
+        }
+      ],
+      "detail_metrics": {
+        "core": [
+          {
+            "key": "ndcg_at_k",
+            "label": "NDCG@K",
+            "value": 0.88,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "precision_at_k",
+            "label": "Precision@K",
+            "value": 82.4,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "recall_at_k",
+            "label": "Recall@K",
+            "value": 76.8,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "adoption_rate",
+            "label": "採用率",
+            "value": 66.6,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "execution_success_rate",
+            "label": "執行成功率",
+            "value": 99.2,
+            "unit": "%",
+            "status": "normal"
+          }
+        ],
+        "secondary": [
+          {
+            "key": "map_at_k",
+            "label": "MAP@K",
+            "value": 0.81,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "guardrail_block_rate",
+            "label": "Guardrail 攔截率",
+            "value": 3.1,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "invalid_recommendation_rate",
+            "label": "無效推薦率",
+            "value": 1.2,
+            "unit": "%",
+            "status": "normal"
+          },
+          {
+            "key": "p95_latency",
+            "label": "P95 Latency",
+            "value": 190,
+            "unit": "ms",
+            "status": "normal"
+          },
+          {
+            "key": "recommendation_runs",
+            "label": "推薦執行次數",
+            "value": 2416,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "energy_savings",
+            "label": "節省能耗",
+            "value": null,
+            "unit": "kWh"
+          },
+          {
+            "key": "cost_savings",
+            "label": "節省成本",
+            "value": null,
+            "unit": "TWD"
+          },
+          {
+            "key": "recommendation_uplift",
+            "label": "Recommendation Uplift",
+            "value": null,
+            "unit": "%"
+          }
+        ]
+      },
+      "data_quality_metrics": [
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.11,
+          "unit": "",
+          "status": "warning"
+        },
+        {
+          "key": "missing_rate",
+          "label": "缺失率",
+          "value": 0.6,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "data_coverage",
+          "label": "資料覆蓋率",
+          "value": 99.4,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "data_freshness",
+          "label": "資料新鮮度",
+          "value": 2,
+          "unit": "min",
+          "status": "normal"
+        },
+        {
+          "key": "entropy",
+          "label": "Entropy",
+          "value": 2.71,
+          "unit": "",
+          "status": "normal"
+        }
+      ]
     },
     {
       "id": "recommender.cooling_plan_02",
@@ -1712,41 +2546,11 @@
       "last_evaluated": "07-15 14:05",
       "statistics_updated_at": "2024-07-15 14:05:00",
       "statistics_period": "2024-07-01 ~ 2024-07-15",
-      "overview": {
-        "success_rate": "97.8%",
-        "p95_latency": "240",
-        "guardrail_rate": "4.6%"
-      },
       "service_info": {
         "online": "Online",
         "last_successful_run_at": "2024-07-15 14:05:00",
         "deployed_at": "2024-07-10 09:20:00"
       },
-      "metric_cards": [
-        {
-          "label": "執行成功率",
-          "value": "97.8%",
-          "tone": "ok",
-          "formula": "1256 / 1284"
-        },
-        {
-          "label": "採用率",
-          "value": "58.6%",
-          "tone": "ok",
-          "formula": "752 / 1284"
-        },
-        {
-          "label": "Guardrail 攔截率",
-          "value": "4.6%",
-          "tone": "warn",
-          "formula": "59 / 1284"
-        },
-        {
-          "label": "P95 Latency",
-          "value": "240",
-          "tone": "ok"
-        }
-      ],
       "charts": [
         {
           "id": "recommender_metrics_trend",
@@ -1907,13 +2711,167 @@
           "status": "Normal"
         }
       ],
-      "execution_stats": {
-        "total_runs": 1284,
-        "successful_runs": 1256,
-        "failed_runs": 28,
-        "guardrail_blocked_runs": 59,
-        "adopted_runs": 752
-      }
+      "overview_metrics": [
+        {
+          "key": "ndcg_at_k",
+          "label": "NDCG@K",
+          "value": 0.79,
+          "unit": "",
+          "status": "warning"
+        },
+        {
+          "key": "precision_at_k",
+          "label": "Precision@K",
+          "value": 74.6,
+          "unit": "%",
+          "status": "warning"
+        },
+        {
+          "key": "adoption_rate",
+          "label": "採用率",
+          "value": 58.6,
+          "unit": "%",
+          "status": "warning"
+        },
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.18,
+          "unit": "",
+          "status": "warning"
+        }
+      ],
+      "detail_metrics": {
+        "core": [
+          {
+            "key": "ndcg_at_k",
+            "label": "NDCG@K",
+            "value": 0.79,
+            "unit": "",
+            "status": "warning"
+          },
+          {
+            "key": "precision_at_k",
+            "label": "Precision@K",
+            "value": 74.6,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "recall_at_k",
+            "label": "Recall@K",
+            "value": 69.1,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "adoption_rate",
+            "label": "採用率",
+            "value": 58.6,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "execution_success_rate",
+            "label": "執行成功率",
+            "value": 97.8,
+            "unit": "%",
+            "status": "normal"
+          }
+        ],
+        "secondary": [
+          {
+            "key": "map_at_k",
+            "label": "MAP@K",
+            "value": 0.72,
+            "unit": "",
+            "status": "warning"
+          },
+          {
+            "key": "guardrail_block_rate",
+            "label": "Guardrail 攔截率",
+            "value": 4.6,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "invalid_recommendation_rate",
+            "label": "無效推薦率",
+            "value": 2.8,
+            "unit": "%",
+            "status": "warning"
+          },
+          {
+            "key": "p95_latency",
+            "label": "P95 Latency",
+            "value": 240,
+            "unit": "ms",
+            "status": "warning"
+          },
+          {
+            "key": "recommendation_runs",
+            "label": "推薦執行次數",
+            "value": 1284,
+            "unit": "",
+            "status": "normal"
+          },
+          {
+            "key": "energy_savings",
+            "label": "節省能耗",
+            "value": null,
+            "unit": "kWh"
+          },
+          {
+            "key": "cost_savings",
+            "label": "節省成本",
+            "value": null,
+            "unit": "TWD"
+          },
+          {
+            "key": "recommendation_uplift",
+            "label": "Recommendation Uplift",
+            "value": null,
+            "unit": "%"
+          }
+        ]
+      },
+      "data_quality_metrics": [
+        {
+          "key": "psi",
+          "label": "PSI",
+          "value": 0.18,
+          "unit": "",
+          "status": "warning"
+        },
+        {
+          "key": "missing_rate",
+          "label": "缺失率",
+          "value": 1.4,
+          "unit": "%",
+          "status": "warning"
+        },
+        {
+          "key": "data_coverage",
+          "label": "資料覆蓋率",
+          "value": 98.6,
+          "unit": "%",
+          "status": "normal"
+        },
+        {
+          "key": "data_freshness",
+          "label": "資料新鮮度",
+          "value": 7,
+          "unit": "min",
+          "status": "normal"
+        },
+        {
+          "key": "entropy",
+          "label": "Entropy",
+          "value": 2.43,
+          "unit": "",
+          "status": "normal"
+        }
+      ]
     }
   ]
 }

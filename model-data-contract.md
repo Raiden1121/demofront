@@ -1,20 +1,30 @@
 # 前端儀表板資料契約
 
-這份文件說明要讓目前 `index.html` 顯示完整儀表板時，`data.json` 需要提供哪些資料。
+這份文件說明模型端需要傳什麼資料，才能顯示完整的模型總覽與詳細頁。
 
-前端載入方式：
+## 1. 責任分工
 
-```js
-fetch("./data.json")
-```
+模型端／後端負責：
 
-前端只負責顯示、排序、篩選、切換圖表與繪製 SVG。所有模型資料、圖表數列、統計數字、狀態與時間都應由 `data.json` 提供。
+- 計算模型品質指標。
+- 計算資料品質與漂移指標。
+- 決定每個指標的 `status`。
+- 決定模型的 `health_status`。
+- 整理圖表需要的 X 軸、數列、矩陣或分箱資料。
+- 輸出完整 `data.json`。
 
-命名規則依 Python / PEP 8 慣例：JSON key 使用 `snake_case`。`label`、`title`、`name` 這類畫面顯示文字可維持原本大小寫；JSON 不是 Class 定義，所以 PascalCase 不適用。
+前端負責：
 
-## 1. 最外層結構
+- 讀取 `data.json`。
+- 顯示總覽、詳細指標與資料品質。
+- 將模型狀態畫成綠、黃、紅或灰色圓點，放在 Model ID 前方。
+- 從 Site 的全部模型狀態產生 Site 最嚴重狀態圓點。
+- 依 JSON 的 `type` 畫圖。
+- 將 `null` 顯示成 `--`。
 
-`data.json` 最外層需要有：
+前端不負責計算 MAE、WAPE、R²、F1、PR-AUC、PSI 或 Health Status。
+
+## 2. 最外層結構
 
 ```json
 {
@@ -26,45 +36,22 @@ fetch("./data.json")
 }
 ```
 
-用途：
+| 欄位 | 用途 |
+|---|---|
+| `meta` | 頁面更新時間與預設期間 |
+| `rules` | 公式或狀態規則的說明資料 |
+| `sites` | 模型總覽的 Site 分組 |
+| `overview` | 篩選、排序與嚴重模型資料 |
+| `models` | 每個模型的完整指標和圖表 |
 
-- `meta`：頁面共用資訊與預設期間。
-- `rules`：狀態判定與公式說明，主要用於 tooltip 或文件說明。
-- `sites`：總覽頁依 Site 分組用。
-- `overview`：總覽頁 tabs、排序選項、嚴重模型清單。
-- `models`：每一個模型的完整詳細資料，也是圖表資料來源。
+所有 JSON key 必須使用 `snake_case`。
 
-## 2. meta
-
-提供整個儀表板共用資訊。
-
-```json
-{
-  "product": "AIoTers DevOps",
-  "page": "model-management-demo",
-  "page_updated_at": "2024-07-15 14:45:00",
-  "default_period": {
-    "label": "2024-07-01 ~ 2024-07-15",
-    "start": "2024-07-01",
-    "end": "2024-07-15"
-  }
-}
-```
-
-前端使用：
-
-- `page_updated_at`：總覽 Critical 區塊的 Last updated。
-- `default_period.label`：模型沒有自己的期間時可當 fallback。
-
-## 3. sites
-
-提供總覽頁「依 Site 分組的模型清單」。
+## 3. Site
 
 ```json
 {
   "id": "site_tpe_chw_01",
   "name": "台北冰水主機房",
-  "health_status": "Warning",
   "stats": {
     "total": 3,
     "normal": 2,
@@ -74,165 +61,295 @@ fetch("./data.json")
 }
 ```
 
-必要欄位：
+- `id` 必須能對應 `models[].site_id`。
+- `stats` 是 Site 下各模型狀態的摘要。
+- Site 圓點不需要獨立的 `health_status`；前端會從該 Site 的全部 `models[].health_status` 取最嚴重狀態。
 
-- `id`：Site ID，必須能對應到 `models[].site_id`。
-- `name`：Site 顯示名稱。
-- `health_status`：Site 整體狀態，建議使用 `Normal`、`Warning`、`Critical`。
-- `stats.total`：該 Site 模型總數。
-- `stats.normal`：Normal 模型數。
-- `stats.warning`：Warning 模型數。
-- `stats.critical`：Critical 模型數。
-
-## 4. overview
-
-提供總覽頁控制項與 Critical 模型表格。
+## 4. 模型共用結構
 
 ```json
 {
-  "tabs": [
-    { "key": "all", "label": "全部" },
-    { "key": "forecast", "label": "forecast" },
-    { "key": "anomaly", "label": "anomaly" },
-    { "key": "recommender", "label": "recommender" }
-  ],
-  "sort_options": [
-    { "key": "model_id", "label": "Model ID" },
-    { "key": "kind", "label": "Kind" },
-    { "key": "status", "label": "Status" },
-    { "key": "metric", "label": "主要指標" },
-    { "key": "skill", "label": "Skill / 比較" },
-    { "key": "drift", "label": "Drift" },
-    { "key": "lastEval", "label": "最後評測" }
-  ],
-  "critical_models": []
-}
-```
-
-### overview.tabs
-
-- `key`：篩選值。`all` 是全部，其餘需對應 `models[].kind`。
-- `label`：tab 顯示文字。
-
-### overview.sort_options
-
-目前前端支援這些 `key`：
-
-- `model_id`
-- `kind`
-- `status`
-- `metric`
-- `skill`
-- `drift`
-- `lastEval`
-
-### overview.critical_models
-
-```json
-{
-  "model_id": "predict.chiller_power_01",
-  "site_name": "台中空調機房",
-  "issue_value": "Skill Score -6.4% / Drift Critical",
-  "impacted_point": "plant.chiller_01.power",
-  "duration": "已持續 3 天",
-  "severity": "Critical"
-}
-```
-
-必要欄位：
-
-- `model_id`：點擊後會切到對應 `models[].id`。
-- `site_name`：Site 名稱。
-- `issue_value`：異常摘要。
-- `impacted_point`：影響測點。
-- `duration`：持續時間。
-- `severity`：嚴重程度，建議使用 `Critical`。
-
-## 5. models 共用欄位
-
-每個模型都需要放在 `models[]`。
-
-```json
-{
-  "id": "predict.chiller_power_01",
+  "id": "predict.energy_load_01",
   "kind": "forecast",
-  "model_kind": "forecast / XGBoost Regressor",
-  "site_id": "site_txg_hvac_02",
-  "site_name": "台中空調機房",
-  "model_version": "v3.2.1",
-  "health_status": "Critical",
-  "last_evaluated": "07-15 14:08",
+  "model_kind": "forecast / LightGBM",
+  "site_id": "site_tpe_chw_01",
+  "site_name": "台北冰水主機房",
+  "target_point": "plant.energy_load",
+  "model_version": "v1.0.0",
+  "health_status": "warning",
+  "last_evaluated": "07-15 14:30",
+  "evaluated_at": "2024-07-15 14:30:00",
+  "evaluation_period": "2024-07-01 ~ 2024-07-15",
   "service_info": {},
-  "metric_cards": [],
+  "overview_metrics": [],
+  "detail_metrics": {
+    "core": [],
+    "secondary": []
+  },
+  "data_quality_metrics": [],
   "charts": [],
   "feature_drift": []
 }
 ```
 
-共用必要欄位：
+Recommender 可以使用：
 
-- `id`：Model ID，必須唯一。
-- `kind`：模型類型，只能是 `forecast`、`anomaly`、`recommender`。
-- `model_kind`：模型類型與演算法顯示文字。
-- `site_id`：必須對應 `sites[].id`。
-- `site_name`：Site 顯示名稱。
-- `model_version`：模型版本。
-- `health_status`：模型狀態，建議使用 `Normal`、`Warning`、`Critical`。
-- `last_evaluated`：總覽表格的最後評測時間。
-- `service_info`：服務資訊。
-- `metric_cards`：詳細頁上方指標卡。
-- `charts`：詳細頁兩張圖的資料來源。
-- `feature_drift`：輸入特徵漂移表格。
+- `target_scope`
+- `target_scope_points`
+- `statistics_updated_at`
+- `statistics_period`
 
-## 6. service_info
+## 5. 指標物件
 
-Forecast 和 Anomaly 會顯示完整服務資訊。
+四個位置都使用同一種指標格式：
+
+- `overview_metrics[]`
+- `detail_metrics.core[]`
+- `detail_metrics.secondary[]`
+- `data_quality_metrics[]`
 
 ```json
 {
-  "online": "Online",
-  "last_successful_run_at": "2024-07-15 14:30:00",
-  "success_rate": "99.1%",
-  "error_rate": "0.9%",
-  "p95_latency": "180 ms",
-  "deployed_at": "2024-07-08 10:30:00"
+  "key": "wape",
+  "label": "WAPE",
+  "value": 12.4,
+  "unit": "%",
+  "status": "warning",
+  "tooltip": "模型端提供的可選說明"
 }
 ```
 
-Recommender 目前只顯示：
+| 欄位 | 必要 | 說明 |
+|---|---:|---|
+| `key` | 是 | 穩定的 `snake_case` 指標識別 |
+| `label` | 是 | 畫面顯示名稱 |
+| `value` | 是 | 數字、字串或 `null` |
+| `unit` | 否 | `%`、`kW`、`ms` 等 |
+| `status` | 否 | `normal`、`warning`、`critical` |
+| `tooltip` | 否 | 指標定義、公式或限制 |
+
+### 缺值
+
+指標暫時沒有數值時仍需保留該指標物件：
 
 ```json
 {
-  "online": "Online",
-  "last_successful_run_at": "2024-07-15 14:20:00",
-  "deployed_at": "2024-07-10 09:20:00"
+  "key": "recommendation_uplift",
+  "label": "Recommendation Uplift",
+  "value": null,
+  "unit": "%"
 }
 ```
 
-## 7. metric_cards
+前端顯示 `--`。不要把未知值填成 `0`，也不要省略必要指標。
 
-詳細頁上方指標卡。
+### 狀態
+
+模型端負責依自己的門檻產生 `status`。前端只套用顏色：
+
+- `normal`：綠色
+- `warning`：黃色
+- `critical`：紅色
+- 未提供或未知值：中性色
+
+## 6. Forecast 指標
+
+### 模型總覽 `overview_metrics`
+
+固定順序：
+
+1. `wape`
+2. `r_squared`
+3. `rmse`
+4. `psi`
+
+### 詳細頁核心 `detail_metrics.core`
+
+1. `mae`
+2. `rmse`
+3. `wape`
+4. `r_squared`
+5. `evaluation_coverage`
+
+### 詳細頁次要 `detail_metrics.secondary`
+
+- `mape`
+- `smape`
+- `bias`
+- `baseline_wape`
+- `skill_score`
+
+### 建議圖表
+
+- Actual、Prediction、Baseline 折線圖
+- MAE、RMSE、WAPE、R² 歷史趨勢
+- 預測誤差分布
+- 殘差趨勢
+
+## 7. Anomaly 指標
+
+### 模型總覽 `overview_metrics`
+
+固定順序：
+
+1. `f1_score`
+2. `recall`
+3. `pr_auc`
+4. `psi`
+
+### 詳細頁核心 `detail_metrics.core`
+
+1. `f1_score`
+2. `precision`
+3. `recall`
+4. `pr_auc`
+5. `evaluation_coverage`
+
+### 詳細頁次要 `detail_metrics.secondary`
+
+- `roc_auc`
+- `false_positive_rate`
+- `false_negative_rate`
+- `anomaly_event_count`
+- `anomaly_rate`
+- `threshold`
+- `score_p95`
+- `score_p99`
+
+只有輸出真正分類機率的模型才使用：
+
+- `brier_score`
+- `ece`
+- `log_loss`
+
+一般 anomaly score 不是機率時，以上三項使用 `value: null`。
+
+### 建議圖表
+
+- F1、Precision、Recall、PR-AUC 趨勢
+- Anomaly Score 與 Threshold 趨勢
+- 混淆矩陣
+- 異常分數分布
+
+## 8. Recommender 指標
+
+### 模型總覽 `overview_metrics`
+
+固定順序：
+
+1. `ndcg_at_k`
+2. `precision_at_k`
+3. `adoption_rate`
+4. `psi`
+
+### 詳細頁核心 `detail_metrics.core`
+
+1. `ndcg_at_k`
+2. `precision_at_k`
+3. `recall_at_k`
+4. `adoption_rate`
+5. `execution_success_rate`
+
+### 詳細頁次要 `detail_metrics.secondary`
+
+- `map_at_k`
+- `guardrail_block_rate`
+- `invalid_recommendation_rate`
+- `p95_latency`
+- `recommendation_runs`
+- `energy_savings`
+- `cost_savings`
+- `recommendation_uplift`
+
+成效資料尚未建立時，後三項使用 `value: null`。
+
+### 建議圖表
+
+- NDCG@K、Precision@K、Recall@K 趨勢
+- 採用率與執行成功率
+- Guardrail 攔截率
+- P95 Latency
+
+## 9. 資料品質
+
+每個模型至少提供：
+
+1. `psi`
+2. `missing_rate`
+3. `data_coverage`
+4. `data_freshness`
+
+Forecast 與 Anomaly 可增加：
+
+- `ks_p_value`
+
+包含類別輸入的 Recommender 可增加：
+
+- `entropy`
+
+範例：
+
+```json
+[
+  {
+    "key": "psi",
+    "label": "PSI",
+    "value": 0.12,
+    "unit": "",
+    "status": "warning"
+  },
+  {
+    "key": "missing_rate",
+    "label": "缺失率",
+    "value": 0.9,
+    "unit": "%",
+    "status": "normal"
+  },
+  {
+    "key": "data_coverage",
+    "label": "資料覆蓋率",
+    "value": 97.1,
+    "unit": "%",
+    "status": "normal"
+  },
+  {
+    "key": "data_freshness",
+    "label": "資料新鮮度",
+    "value": 4,
+    "unit": "min",
+    "status": "normal"
+  }
+]
+```
+
+## 10. Health Status
+
+模型端直接提供：
 
 ```json
 {
-  "label": "MAPE",
-  "value": "31.5%",
-  "tone": "bad",
-  "formula": "1 - 31.5 / 17.6"
+  "health_status": "warning"
 }
 ```
 
-欄位：
+前端呈現：
 
-- `label`：卡片標題。
-- `value`：卡片主數值。
-- `tone`：顏色狀態，支援 `ok`、`warn`、`bad`。
-- `formula`：可選，前端會當成 tooltip。
-- `tooltip`：可選，如果有提供會優先使用。
+- `normal`：綠點
+- `warning`：黃點
+- `critical`：紅點
+- 其他值：灰點
 
-## 8. feature_drift
+模型總覽不顯示獨立的 Health Status 欄位，圓點放在 Model ID 前方。詳細頁也不顯示獨立的 Health Status 項目，圓點同樣放在 Model ID 前方。
 
-詳細頁「輸入特徵漂移監測」表格。
+Site 圓點會檢查該 Site 的全部模型，依下列順序取最嚴重狀態：
+
+```text
+critical > warning > normal > unknown
+```
+
+前端不根據模型指標重新計算 Health Status。狀態文字只存在 tooltip 與無障礙標籤。
+
+## 11. Feature Drift
 
 ```json
 {
@@ -240,272 +357,117 @@ Recommender 目前只顯示：
   "psi": 0.132,
   "ks_p_value": 0.078,
   "importance": 0.174,
-  "status": "Warning"
+  "status": "warning"
 }
 ```
 
-必要欄位：
+前端直接使用 `status`，不根據 `psi` 重新判斷。
 
-- `feature_name`：特徵名稱。
-- `psi`：PSI 數值。
-- `ks_p_value`：KS p-value。
-- `importance`：特徵重要度。
-- `status`：漂移狀態，建議使用 `Normal`、`Warning`、`Critical`。
-
-前端目前會依 `psi` 重新判斷顯示狀態：
-
-- `psi < 0.10`：Normal
-- `0.10 <= psi <= 0.25`：Warning
-- `psi > 0.25`：Critical
-
-## 9. charts
-
-每個模型的詳細頁有兩張圖，都從 `models[].charts[]` 讀。
+## 12. Line 與 Bar 圖表
 
 ```json
 {
-  "id": "forecast_metrics_trend",
-  "title": "MAE / MAPE / Skill Score 趨勢",
-  "subtitle": "評測期間：2024-07-01 ~ 2024-07-15，單位：kW",
-  "default_metric": "MAPE",
-  "type": "bar",
+  "id": "actual_prediction_trend",
+  "type": "line",
+  "title": "Actual vs Prediction",
+  "subtitle": "2024-07-01 ~ 2024-07-15",
   "x_axis": ["07-01", "07-02", "07-03"],
   "series": [
-    { "name": "MAE", "unit": "kW", "values": [42, 45, 44] },
-    { "name": "MAPE", "unit": "%", "values": [78, 82, 74] }
+    {
+      "key": "actual",
+      "name": "Actual",
+      "unit": "kW",
+      "values": [320.5, 335.2, 341.8]
+    },
+    {
+      "key": "prediction",
+      "name": "Prediction",
+      "unit": "kW",
+      "values": [318.1, null, 346.2]
+    }
   ]
 }
 ```
-
-共用欄位：
-
-- `id`：圖表識別。
-- `title`：圖表標題。
-- `subtitle`：圖表副標題。
-- `type`：`bar` 或 `line`。
-- `default_metric`：只有 `bar` 需要，代表預設顯示哪個 `series.name`。
-- `x_axis`：X 軸標籤。
-- `series[].name`：資料序列名稱。
-- `series[].unit`：可選，單位。
-- `series[].values`：數值陣列。
 
 硬性規則：
 
-- 每個模型至少要有一個 `type: "bar"` chart。
-- 每個模型至少要有一個 `type: "line"` chart。
-- `x_axis.length` 必須等於每個 `series.values.length`。
-- `default_metric` 必須等於其中一個 `series[].name`。
+- `type` 使用 `line` 或 `bar`。
+- `x_axis` 必須是陣列。
+- 每個 `series.values.length` 必須等於 `x_axis.length`。
+- 資料缺值使用 `null`，不可自行補 `0`。
+- `bar` 可提供 `default_metric`，值需對應 `series[].key` 或 `series[].name`。
 
-## 10. Forecast 模型
-
-`kind: "forecast"` 需要這些專屬欄位。
-
-```json
-{
-  "target_point": "plant.chiller_power_kw",
-  "evaluated_at": "2024-07-15 14:08:00",
-  "evaluation_period": "2024-07-01 ~ 2024-07-15",
-  "driftStatus": "Critical",
-  "overview": {
-    "mape": "31.5%",
-    "skill_score": "-6.4%",
-    "drift": "Critical"
-  },
-  "evaluation_data_quality": {
-    "prediction_count": 18420,
-    "actual_count": 18001,
-    "joined_rows": 16972,
-    "excluded_actual_rows": 1029
-  }
-}
-```
-
-Forecast overview 對應總覽表格：
-
-- `overview.mape`：MAPE 欄。
-- `overview.skill_score`：Skill Score 欄。
-- `overview.drift` 或 `driftStatus`：Drift 欄。
-
-Forecast charts 建議：
-
-- `type: "bar"`：MAE / MAPE / Skill Score 趨勢。
-- `type: "line"`：Actual / Prediction / Baseline。
-
-Forecast quality 對應詳細頁：
-
-- `prediction_count`
-- `actual_count`
-- `joined_rows`
-- `excluded_actual_rows`
-
-## 11. Anomaly 模型
-
-`kind: "anomaly"` 需要這些專屬欄位。
+## 13. Confusion Matrix
 
 ```json
 {
-  "target_point": "tower.ct_03.temp",
-  "evaluated_at": "2024-07-15 14:12:00",
-  "evaluation_period": "2024-07-01 ~ 2024-07-15",
-  "overview": {
-    "events": "126 events",
-    "anomaly_rate": "7.8%",
-    "score_p99": "0.94"
-  },
-  "secondary_metrics": null,
-  "scoring_stats": {
-    "scored_rows": 1662,
-    "valid_rows": 1615,
-    "excluded_rows": 47,
-    "labeled_rows": 0
-  }
-}
-```
-
-Anomaly overview 對應總覽表格：
-
-- `overview.events`：Events 欄。
-- `overview.anomaly_rate`：Anomaly Rate 欄。
-- `overview.score_p99`：Score P99 欄。
-
-如果有標註資料，提供 `secondary_metrics`：
-
-```json
-{
-  "title": "標註資料評測",
-  "labeled_rows": 1460,
-  "metrics": [
-    { "label": "Precision", "value": "92.4%", "tone": "ok" },
-    { "label": "Recall", "value": "88.1%", "tone": "ok" },
-    { "label": "F1-score", "value": "90.2%", "tone": "ok" }
+  "id": "confusion_matrix",
+  "type": "confusion_matrix",
+  "title": "混淆矩陣",
+  "subtitle": "實際標籤與模型判斷結果",
+  "x_axis": ["Predicted Normal", "Predicted Anomaly"],
+  "y_axis": ["Actual Normal", "Actual Anomaly"],
+  "matrix": [
+    [1412, 7],
+    [5, 36]
   ]
 }
 ```
 
-沒有標註資料時可用：
+矩陣位置：
 
-```json
-"secondary_metrics": null
+```text
+TN  FP
+FN  TP
 ```
 
-Anomaly charts 建議：
+`matrix` 必須是 2 x 2，兩個軸都必須有兩個標籤。
 
-- `type: "bar"`：異常數量 / 異常率 / 異常分數。
-- `type: "line"`：P95 Score / P99 Score / Threshold。
-
-Anomaly quality 對應詳細頁：
-
-- `scored_rows`
-- `valid_rows`
-- `excluded_rows`
-- `labeled_rows`
-
-## 12. Recommender 模型
-
-`kind: "recommender"` 需要這些專屬欄位。
+## 14. Histogram
 
 ```json
 {
-  "target_scope": "3 output points",
-  "target_scope_points": [
-    "plant.cooling_schedule",
-    "plant.chw_supply_setpoint",
-    "plant.chiller_sequence"
-  ],
-  "statistics_updated_at": "2024-07-15 14:05:00",
-  "statistics_period": "2024-07-01 ~ 2024-07-15",
-  "overview": {
-    "success_rate": "97.8%",
-    "p95_latency": "240",
-    "guardrail_rate": "4.6%"
-  },
-  "execution_stats": {
-    "total_runs": 1284,
-    "successful_runs": 1256,
-    "failed_runs": 28,
-    "guardrail_blocked_runs": 59,
-    "adopted_runs": 752
-  }
-}
-```
-
-Recommender overview 對應總覽表格：
-
-- `target_scope`：Target / Scope 欄。
-- `overview.success_rate`：Success Rate 欄。
-- `overview.p95_latency`：P95 Latency 欄。
-- `overview.guardrail_rate`：Guardrail Rate 欄。
-
-Recommender charts 建議：
-
-- `type: "bar"`：成功率 / 採用率 / Guardrail 攔截率。
-- `type: "line"`：P95 Latency。
-
-Recommender quality 對應詳細頁：
-
-- `total_runs`
-- `successful_runs`
-- `failed_runs`
-- `guardrail_blocked_runs`
-- `adopted_runs`
-
-## 13. 最小可顯示模型範例
-
-以下是每個模型至少要具備的欄位輪廓。
-
-```json
-{
-  "id": "model.id",
-  "kind": "forecast",
-  "model_kind": "forecast / Algorithm",
-  "site_id": "site_id",
-  "site_name": "Site 名稱",
-  "target_point": "target.point",
-  "model_version": "v1.0.0",
-  "health_status": "Normal",
-  "last_evaluated": "07-15 14:30",
-  "evaluated_at": "2024-07-15 14:30:00",
-  "evaluation_period": "2024-07-01 ~ 2024-07-15",
-  "overview": {},
-  "service_info": {},
-  "metric_cards": [],
-  "charts": [
+  "id": "anomaly_score_distribution",
+  "type": "histogram",
+  "title": "異常分數分布",
+  "subtitle": "Anomaly Score 分箱計數",
+  "bins": [
     {
-      "id": "main_trend",
-      "title": "主指標趨勢",
-      "subtitle": "期間說明",
-      "default_metric": "Metric A",
-      "type": "bar",
-      "x_axis": ["07-01"],
-      "series": [
-        { "name": "Metric A", "values": [1] }
-      ]
+      "start": 0,
+      "end": 0.1,
+      "count": 510
     },
     {
-      "id": "comparison_trend",
-      "title": "比較趨勢",
-      "subtitle": "單位說明",
-      "type": "line",
-      "x_axis": ["07-01"],
-      "series": [
-        { "name": "Line A", "values": [1] }
-      ]
+      "start": 0.1,
+      "end": 0.2,
+      "count": 424
     }
-  ],
-  "feature_drift": [],
-  "evaluation_data_quality": {}
+  ]
 }
 ```
 
-## 14. 交付前檢查清單
+每個 bin 都需要 `start`、`end` 與數值型 `count`。
 
-資料產生端交付 `data.json` 前，請確認：
+## 15. 圖表錯誤處理
 
-- `sites[].id` 都能被 `models[].site_id` 對到。
+- 不支援的 `type`：該卡顯示「不支援的圖表類型」。
+- `x_axis` 與 `values` 長度不同：該卡顯示「資料格式錯誤」。
+- 混淆矩陣不是 2 x 2：該卡顯示「資料格式錯誤」。
+- Histogram 缺少有效 `bins`：該卡顯示「資料格式錯誤」。
+- 單張圖錯誤不影響其他圖表、指標或模型。
+
+## 16. 交付檢查
+
+輸出 `data.json` 前確認：
+
+- 所有 key 都是 `snake_case`。
 - `models[].id` 不重複。
-- `models[].kind` 只使用 `forecast`、`anomaly`、`recommender`。
-- 每個 model 都有 `type: "bar"` 和 `type: "line"` 的 chart。
-- 每個 chart 的 `x_axis.length` 等於每個 `series.values.length`。
-- `bar` chart 的 `default_metric` 等於其中一個 `series[].name`。
-- `health_status`、`feature_drift[].status` 使用一致的狀態值。
-- Critical 模型的 `overview.critical_models[].model_id` 可以對到 `models[].id`。
+- `models[].site_id` 能對應 `sites[].id`。
+- `kind` 只使用 `forecast`、`anomaly`、`recommender`。
+- 每個模型都有該種類要求的 `overview_metrics`。
+- 每個模型有 5 個必要核心指標。
+- 必要指標沒有值時使用 `value: null`，不省略物件。
+- 每個模型都有 PSI、缺失率、資料覆蓋率、資料新鮮度。
+- 指標狀態與 Health Status 由模型端決定。
+- Line／Bar 的 X 軸長度等於每個序列長度。
+- 圖表數值由模型端提供，前端不重新聚合。
