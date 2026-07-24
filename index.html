@@ -1237,7 +1237,7 @@
         <section class="critical">
           <div class="critical-head">
             <div class="critical-title"><span>△</span><span>嚴重模型</span></div>
-            <div class="small-code mono">Last updated: 14:45</div>
+            <div class="small-code mono">Last updated: <span id="criticalUpdated">--</span></div>
           </div>
           <table>
             <thead>
@@ -1260,7 +1260,7 @@
           <button class="btn ghost" id="backButton" type="button">← 模型管理</button>
           <div class="report-title">模型詳細報告</div>
           <div class="report-actions">
-            <span>頁面更新時間: <span id="detailUpdated">2024-07-15 14:08:00</span></span>
+            <span>頁面更新時間: <span id="detailUpdated">--</span></span>
             <button class="btn primary" id="exportButton" type="button">⇩ 輸出報告</button>
           </div>
         </div>
@@ -1291,7 +1291,7 @@
             <div class="chart-head">
               <div>
                 <h4 class="chart-title" id="trendChartTitle">MAE / MAPE / Skill Score 趨勢</h4>
-                <p class="chart-subtitle" id="trendChartSubtitle">評測期間：2024-07-01 ~ 2024-07-15</p>
+                <p class="chart-subtitle" id="trendChartSubtitle">--</p>
               </div>
               <div class="segmented" id="trendSegments" aria-label="指標切換">
                 <span>MAE</span>
@@ -1349,187 +1349,10 @@
   <div class="toast" id="toast" role="status"></div>
 
   <script>
-    const sites = [
-      { id: "site_tpe_chw_01", name: "台北冰水主機房", health: "良好", level: "ok", stats: { normal: 3, warning: 1, critical: 0 } },
-      { id: "site_txg_hvac_02", name: "台中空調機房", health: "警告", level: "warn", stats: { normal: 2, warning: 1, critical: 1 } },
-      { id: "site_khh_energy_03", name: "高雄能源中心", health: "嚴重", level: "bad", stats: { normal: 2, warning: 1, critical: 1 } }
-    ];
-
-    const models = [
-      {
-        id: "predict.chiller_power_01",
-        shortId: "predict.chiller_powe...",
-        kind: "forecast",
-        type: "forecast / XGBoost Regressor",
-        siteId: "site_txg_hvac_02",
-        status: "Critical",
-        statusText: "Critical",
-        target: "plant.chiller_power_kw",
-        version: "v3.2.1",
-        mainMetric: "31.5% (MAPE)",
-        skill: "-6.4%",
-        drift: "嚴重",
-        lastEval: "07-15 14:08",
-        updated: "2024-07-15 14:08:00",
-        metrics: [
-          { label: "MAPE", value: "31.5%", delta: "↑ 8.6%", tone: "bad", note: "較上次評測" },
-          { label: "Baseline MAPE", value: "17.6%", delta: "↑ 2.4%", tone: "warn", note: "較上次評測" },
-          { label: "Skill Score", value: "-6.4%", delta: "↓ 5.1%", tone: "bad", note: "較上次評測" },
-          { label: "評測覆蓋率", value: "94.1%", delta: "↓ 1.0%", tone: "warn", note: "較上次評測" },
-          { label: "最近 7 天趨勢 (MAPE)", value: "+7.8%", tone: "bad", mini: true }
-        ],
-        bars: [78, 82, 74, 88, 85, 79, 94, 98, 108, 102, 118, 123, 137, 141],
-        line: {
-          actual: [470, 490, 445, 520, 585, 640, 700, 760, 850, 790, 750],
-          prediction: [210, 230, 185, 270, 210, 260, 310, 360, 470, 410, 350],
-          baseline: [340, 365, 310, 400, 440, 485, 540, 620, 665, 575, 520]
-        },
-        features: [
-          ["chiller_power_kw", "0.486", "0.004", "0.338", "Critical"],
-          ["supply_air_temp", "0.245", "0.041", "0.224", "Warning"],
-          ["outdoor_temp", "0.092", "0.188", "0.182", "Normal"],
-          ["occupancy_rate", "0.118", "0.262", "0.126", "Normal"],
-          ["chilled_water_flow", "0.302", "0.019", "0.158", "Critical"]
-        ],
-        quality: {
-          stats: [["PREDICTION_COUNT", "18,420"], ["ACTUAL_COUNT", "18,001"], ["JOINED_ROWS", "16,972"], ["EXCLUDED_ROWS", "1,029"]],
-          coverage: "94.1%"
-        }
-      },
-      {
-        id: "predict.chilled_water_01",
-        kind: "forecast",
-        type: "forecast / LightGBM",
-        siteId: "site_tpe_chw_01",
-        status: "Active",
-        statusText: "Active",
-        target: "plant.chw_supply_temp",
-        version: "v2.8.4",
-        mainMetric: "12.4% (MAPE)",
-        skill: "+38.3%",
-        drift: "正常",
-        lastEval: "07-15 14:30",
-        updated: "2024-07-15 14:30:00"
-      },
-      {
-        id: "anomaly.chw_temp_01",
-        kind: "anomaly",
-        type: "anomaly / Isolation Forest",
-        siteId: "site_tpe_chw_01",
-        status: "Warning",
-        statusText: "Warning",
-        target: "plant.chw_temp_delta",
-        version: "v1.9.0",
-        mainMetric: "48 events",
-        skill: "異常率 3.2%",
-        drift: "警告",
-        lastEval: "07-15 14:25",
-        updated: "2024-07-15 14:25:00"
-      },
-      {
-        id: "recommender.setpoint_01",
-        kind: "recommender",
-        type: "recommender / Policy Ranker",
-        siteId: "site_tpe_chw_01",
-        status: "Active",
-        statusText: "Active",
-        target: "plant.chw_setpoint",
-        version: "v1.4.7",
-        mainMetric: "97.2%",
-        skill: "採用率 68.7%",
-        drift: "正常",
-        lastEval: "07-15 14:20",
-        updated: "2024-07-15 14:20:00"
-      },
-      {
-        id: "anomaly.ct_water_temp_01",
-        kind: "anomaly",
-        type: "anomaly / AutoEncoder",
-        siteId: "site_khh_energy_03",
-        status: "Critical",
-        statusText: "Critical",
-        target: "tower.ct_03.temp",
-        version: "v2.1.6",
-        mainMetric: "126 events",
-        skill: "異常率 7.8%",
-        drift: "嚴重",
-        lastEval: "07-15 14:12",
-        updated: "2024-07-15 14:12:00"
-      },
-      {
-        id: "predict.energy_load_03",
-        kind: "forecast",
-        type: "forecast / XGBoost Regressor",
-        siteId: "site_khh_energy_03",
-        status: "Active",
-        statusText: "Active",
-        target: "meter.energy_load",
-        version: "v3.0.2",
-        mainMetric: "15.8% (MAPE)",
-        skill: "+12.3%",
-        drift: "正常",
-        lastEval: "07-15 14:10",
-        updated: "2024-07-15 14:10:00"
-      },
-      {
-        id: "recommender.cooling_plan_02",
-        kind: "recommender",
-        type: "recommender / Policy Ranker",
-        siteId: "site_txg_hvac_02",
-        status: "Active",
-        statusText: "Active",
-        target: "plant.cooling_schedule",
-        version: "v1.5.3",
-        mainMetric: "Run 1,284",
-        skill: "採用率 61.4%",
-        drift: "正常",
-        lastEval: "07-15 14:05",
-        updated: "2024-07-15 14:05:00"
-      }
-    ];
-
-    const criticalIssues = [
-      {
-        id: "predict.chiller_power_01",
-        site: "台中空調機房",
-        detail: "Skill Score -6.4% / Drift Critical",
-        asset: "plant.chiller_01.power",
-        duration: "已持續 3 天"
-      },
-      {
-        id: "anomaly.ct_water_temp_01",
-        site: "高雄能源中心",
-        detail: "Anomaly Events 126 / Anomaly Rate 7.8%",
-        asset: "tower.ct_03.temp",
-        duration: "已持續 1 天"
-      }
-    ];
-
-    const fallbackDetail = {
-        metrics: [
-          { label: "MAPE", value: "14.8%", delta: "↓ 1.2%", tone: "ok", note: "較上次評測" },
-          { label: "Baseline MAPE", value: "20.1%", delta: "↑ 0.8%", tone: "warn", note: "較上次評測" },
-          { label: "Skill Score", value: "+18.4%", delta: "↑ 2.3%", tone: "ok", note: "較上次評測" },
-          { label: "評測覆蓋率", value: "96.8%", delta: "↑ 0.6%", tone: "ok", note: "較上次評測" },
-          { label: "最近 7 天趨勢 (MAPE)", value: "-1.4%", tone: "ok", mini: true }
-        ],
-      bars: [68, 70, 66, 69, 71, 70, 67, 65, 66, 64, 63, 62, 61, 60],
-      line: {
-        actual: [410, 425, 415, 440, 458, 470, 486, 510, 535, 522, 548],
-        prediction: [398, 430, 405, 448, 452, 465, 492, 500, 528, 530, 541],
-        baseline: [360, 380, 372, 400, 420, 432, 450, 468, 486, 478, 492]
-      },
-      features: [
-        ["supply_temp", "0.104", "0.182", "0.268", "Normal"],
-        ["return_temp", "0.086", "0.210", "0.193", "Normal"],
-        ["flow_rate", "0.132", "0.078", "0.174", "Warning"],
-        ["outdoor_temp", "0.074", "0.244", "0.151", "Normal"]
-      ],
-      quality: {
-        stats: [["PREDICTION_COUNT", "12,880"], ["ACTUAL_COUNT", "12,764"], ["JOINED_ROWS", "12,502"], ["EXCLUDED_ROWS", "262"]],
-        coverage: "96.8%"
-      }
-    };
+    let sites = [];
+    let models = [];
+    let criticalIssues = [];
+    let appData = null;
 
     const state = {
       kind: "all",
@@ -1540,8 +1363,144 @@
       trendMetric: "MAPE"
     };
 
-    const siteById = new Map(sites.map((site) => [site.id, site]));
-    const modelById = new Map(models.map((model) => [model.id, model]));
+    let siteById = new Map();
+    let modelById = new Map();
+
+    async function loadData() {
+      const response = await fetch("./data.json");
+      if (!response.ok) {
+        throw new Error(`data.json 載入失敗 (${response.status})`);
+      }
+      appData = await response.json();
+      sites = appData.sites.map(normalizeSite);
+      models = appData.models.map(normalizeModel);
+      criticalIssues = (appData.overview?.criticalModels || []).map((issue) => ({
+        id: issue.modelId,
+        site: issue.siteName,
+        detail: issue.issueValue,
+        asset: issue.impactedPoint,
+        duration: issue.duration,
+        severity: issue.severity || "Critical"
+      }));
+      siteById = new Map(sites.map((site) => [site.id, site]));
+      modelById = new Map(models.map((model) => [model.id, model]));
+      state.collapsedSiteIds = new Set(sites.map((site) => site.id));
+      state.selectedModelId = criticalIssues[0]?.id || models[0]?.id || "";
+    }
+
+    function normalizeSite(site) {
+      const status = displayStatus(site.healthStatus);
+      return {
+        id: site.id,
+        name: site.name,
+        health: status,
+        level: statusTone(status),
+        stats: {
+          normal: site.stats?.normal || 0,
+          warning: site.stats?.warning || 0,
+          critical: site.stats?.critical || 0
+        }
+      };
+    }
+
+    function normalizeModel(model) {
+      const overview = model.overview || {};
+      const target = model.targetPoint || model.targetScope || "";
+      const drift = model.driftStatus || overview.drift || model.healthStatus;
+      return {
+        ...model,
+        type: model.modelKind,
+        status: model.healthStatus,
+        statusText: model.healthStatus,
+        target,
+        version: model.modelVersion,
+        mainMetric: primaryMetricFromData(model),
+        skill: comparisonMetricFromData(model),
+        drift,
+        lastEval: model.lastEvaluated,
+        updated: model.evaluatedAt || model.statisticsUpdatedAt || appData?.meta?.pageUpdatedAt || "",
+        period: model.evaluationPeriod || model.statisticsPeriod || appData?.meta?.defaultPeriod?.label || "",
+        ops: normalizeServiceInfo(model.serviceInfo),
+        metrics: (model.metricCards || []).map(normalizeMetric),
+        secondaryMetrics: model.secondaryMetrics?.metrics || [],
+        labeledRows: model.secondaryMetrics?.labeledRows || 0,
+        features: (model.featureDrift || []).map((feature) => [
+          feature.featureName,
+          String(feature.psi),
+          String(feature.ksPValue),
+          String(feature.importance),
+          feature.status
+        ]),
+        quality: normalizeQuality(model),
+        chartsByType: {
+          bar: model.charts?.find((chart) => chart.type === "bar") || null,
+          line: model.charts?.find((chart) => chart.type === "line") || null
+        }
+      };
+    }
+
+    function normalizeServiceInfo(serviceInfo = {}) {
+      return {
+        online: serviceInfo.online,
+        lastSuccess: serviceInfo.lastSuccessfulRunAt,
+        successRate: serviceInfo.successRate,
+        errorRate: serviceInfo.errorRate,
+        p95Latency: serviceInfo.p95Latency,
+        deployedAt: serviceInfo.deployedAt
+      };
+    }
+
+    function normalizeMetric(metric) {
+      return {
+        ...metric,
+        tooltip: metric.tooltip || metric.formula
+      };
+    }
+
+    function primaryMetricFromData(model) {
+      const overview = model.overview || {};
+      if (model.kind === "forecast") return `${overview.mape || ""} (MAPE)`;
+      if (model.kind === "anomaly") return overview.events || "";
+      if (model.kind === "recommender") return overview.successRate || "";
+      return "";
+    }
+
+    function comparisonMetricFromData(model) {
+      const overview = model.overview || {};
+      if (model.kind === "forecast") return overview.skillScore || "";
+      if (model.kind === "anomaly") return `Anomaly Rate ${overview.anomalyRate || ""}`;
+      if (model.kind === "recommender") return `Guardrail Rate ${overview.guardrailRate || ""}`;
+      return "";
+    }
+
+    function normalizeQuality(model) {
+      const qualityMap = {
+        forecast: [
+          ["PREDICTION_COUNT", model.evaluationDataQuality?.predictionCount],
+          ["ACTUAL_COUNT", model.evaluationDataQuality?.actualCount],
+          ["JOINED_ROWS", model.evaluationDataQuality?.joinedRows],
+          ["EXCLUDED_ROWS", model.evaluationDataQuality?.excludedActualRows]
+        ],
+        anomaly: [
+          ["SCORED_ROWS", model.scoringStats?.scoredRows],
+          ["VALID_ROWS", model.scoringStats?.validRows],
+          ["EXCLUDED_ROWS", model.scoringStats?.excludedRows],
+          ["LABELED_ROWS", model.scoringStats?.labeledRows]
+        ],
+        recommender: [
+          ["TOTAL_RUNS", model.executionStats?.totalRuns],
+          ["SUCCESSFUL_RUNS", model.executionStats?.successfulRuns],
+          ["FAILED_RUNS", model.executionStats?.failedRuns],
+          ["GUARDRAIL_BLOCKED_RUNS", model.executionStats?.guardrailBlockedRuns],
+          ["ADOPTED_RUNS", model.executionStats?.adoptedRuns]
+        ]
+      };
+      return {
+        stats: (qualityMap[model.kind] || [])
+          .filter(([, value]) => value !== undefined && value !== null)
+          .map(([label, value]) => [label, Number(value).toLocaleString()])
+      };
+    }
 
     const statusTone = (status) => {
       if (status === "Critical" || status === "嚴重") return "bad";
@@ -1597,29 +1556,12 @@
       }, "Normal");
     };
 
-    const consecutiveTailAbove = (values, threshold) => {
-      let count = 0;
-      for (let index = values.length - 1; index >= 0; index -= 1) {
-        if (values[index] <= threshold) break;
-        count += 1;
-      }
-      return count;
-    };
-
-    const anomalyHealthStatus = (data) => {
-      const criticalThreshold = 0.90;
-      const consecutiveBreaches = consecutiveTailAbove(data.p99Series, data.threshold);
-      if (data.p99 >= criticalThreshold || consecutiveBreaches >= 7) return "Critical";
-      if (data.p99 > data.threshold) return "Warning";
-      return "Normal";
-    };
-
-    const skillScore = (mape, baselineMape) => `${((1 - mape / baselineMape) * 100).toFixed(1)}%`;
-
     const numberFrom = (value) => {
       const match = String(value).replace(/,/g, "").match(/-?\d+(\.\d+)?/);
       return match ? Number(match[0]) : 0;
     };
+
+    const timeOnly = (value) => String(value || "").split(" ")[1]?.slice(0, 5) || value || "--";
 
     const sortValue = (model, key) => {
       if (key === "modelId") return model.id;
@@ -1633,16 +1575,10 @@
     };
 
     function primaryMetric(model) {
-      if (model.kind === "forecast") return model.mainMetric.replace(" (MAPE)", "");
-      if (model.kind === "anomaly") return model.id.includes("ct_water") ? "126 events" : "48 events";
-      if (model.kind === "recommender") return model.id.includes("cooling") ? "Run 1,284" : "Run 2,416";
       return model.mainMetric;
     }
 
     function comparisonMetric(model) {
-      if (model.kind === "forecast") return model.id === "predict.chilled_water_01" ? `+${skillScore(12.4, 20.1)}` : model.skill;
-      if (model.kind === "anomaly") return model.id.includes("ct_water") ? "Anomaly Rate 7.8%" : "Anomaly Rate 3.2%";
-      if (model.kind === "recommender") return model.id.includes("cooling") ? "Adoption Rate 61.4%" : "Adoption Rate 68.7%";
       return model.skill;
     }
 
@@ -1659,241 +1595,58 @@
     }
 
     function detailOf(model) {
-      const isCritical = normalizeStatus(model.status) === "critical";
-      const isWarning = normalizeStatus(model.status) === "warning";
       const site = siteById.get(model.siteId);
-      const period = "2024-07-01 ~ 2024-07-15";
-      const quality = model.quality || {
-        stats: [["PREDICTION_COUNT", "12,880"], ["ACTUAL_COUNT", "12,764"], ["JOINED_ROWS", "12,502"], ["EXCLUDED_ROWS", "262"]]
+      const barChart = model.chartsByType.bar;
+      const lineChart = model.chartsByType.line;
+      const trendSeries = Object.fromEntries((barChart?.series || []).map((series) => [series.name, series.values]));
+      const line = lineFromChart(lineChart);
+      const chart = {
+        trendTitle: barChart?.title || "",
+        trendSubtitle: barChart?.subtitle || "",
+        segments: (barChart?.series || []).map((series) => series.name),
+        defaultMetric: barChart?.defaultMetric || barChart?.series?.[0]?.name || "",
+        comparisonTitle: lineChart?.title || "",
+        comparisonSubtitle: lineChart?.subtitle || "",
+        legend: (lineChart?.series || []).map((series) => series.name),
+        xAxis: {
+          bar: barChart?.xAxis || [],
+          line: lineChart?.xAxis || []
+        }
       };
-      const features = model.features || fallbackDetail.features;
-      const effectiveStatus = model.kind === "anomaly" ? displayStatus(model.status) : worstFeatureStatus(features);
-      const effectiveTone = statusTone(effectiveStatus);
-      const base = {
+      return {
         ...model,
-        healthStatus: effectiveStatus,
-        healthTone: effectiveTone,
-        siteName: site.name,
-        siteCode: site.id,
+        healthStatus: displayStatus(model.status),
+        healthTone: statusTone(model.status),
+        healthRule: appData?.rules?.healthStatus?.[model.kind] || "",
+        siteName: site?.name || model.siteName || "",
+        siteCode: site?.id || model.siteId,
         evaluatedAt: model.updated,
-        period,
-        ops: {
-          online: isCritical ? "Offline" : "Online",
-          lastSuccess: isCritical ? "2024-07-15 13:42:10" : model.updated,
-          successRate: isCritical ? "91.2%" : isWarning ? "96.4%" : "99.1%",
-          errorRate: isCritical ? "8.8%" : isWarning ? "3.6%" : "0.9%",
-          p95Latency: isCritical ? "840 ms" : isWarning ? "430 ms" : "180 ms",
-          deployedAt: model.kind === "recommender" ? "2024-07-10 09:20:00" : "2024-07-08 10:30:00"
-        },
         statuses: {
-          service: isCritical ? "Critical" : "Normal",
-          performance: isCritical ? "Critical" : isWarning ? "Warning" : "Normal",
+          service: displayStatus(model.status),
+          performance: displayStatus(model.status),
           drift: displayDrift(model.drift),
-          data: isCritical ? "Warning" : "Normal",
+          data: displayStatus(model.status),
           overall: displayStatus(model.status)
         },
-        features,
-        quality
+        trendSeries,
+        bars: trendSeries[barChart?.defaultMetric] || barChart?.series?.[0]?.values || [],
+        line,
+        chart
       };
+    }
 
-      if (model.kind === "anomaly") {
-        const anomalyData = model.id.includes("ct_water")
-          ? {
-              events: 126,
-              scoredRows: 1662,
-              validRows: 1615,
-              excludedRows: 47,
-              p95: 0.86,
-              p99: 0.94,
-              threshold: 0.70,
-              eventSeries: [36, 42, 45, 51, 58, 67, 72, 80, 91, 98, 108, 116, 122, 126],
-              p95Series: [0.42, 0.46, 0.49, 0.52, 0.57, 0.62, 0.66, 0.70, 0.75, 0.79, 0.82, 0.84, 0.85, 0.86],
-              p99Series: [0.58, 0.61, 0.64, 0.67, 0.71, 0.75, 0.78, 0.82, 0.86, 0.89, 0.91, 0.92, 0.93, 0.94],
-              precision: null,
-              recall: null,
-              f1: null,
-              labeledRows: null
-            }
-          : {
-              events: 48,
-              scoredRows: 1534,
-              validRows: 1500,
-              excludedRows: 34,
-              p95: 0.66,
-              p99: 0.78,
-              threshold: 0.70,
-              eventSeries: [14, 18, 17, 21, 24, 26, 28, 31, 35, 38, 41, 44, 46, 48],
-              p95Series: [0.34, 0.37, 0.36, 0.40, 0.43, 0.45, 0.48, 0.51, 0.54, 0.58, 0.61, 0.63, 0.65, 0.66],
-              p99Series: [0.48, 0.51, 0.50, 0.55, 0.58, 0.60, 0.63, 0.66, 0.69, 0.72, 0.75, 0.76, 0.77, 0.78],
-              precision: "92.4%",
-              recall: "88.1%",
-              f1: "90.2%",
-              labeledRows: 1460
-            };
-        const anomalyRate = anomalyData.events / anomalyData.validRows;
-        const anomalyRateSeries = anomalyData.eventSeries.map((events) => Number((events / anomalyData.validRows * 100).toFixed(1)));
-        const hasLabels = Number(anomalyData.labeledRows) > 0;
-        const healthStatus = anomalyHealthStatus(anomalyData);
-        const healthTone = statusTone(healthStatus);
-        const labelMetricTooltip = hasLabels ? `使用 Labeled Rows = ${anomalyData.labeledRows.toLocaleString()} 計算` : "";
-        return {
-          ...base,
-          healthStatus,
-          healthTone,
-          healthRule: "判定規則：P99 > Threshold 為 Warning；P99 >= 0.90 或連續 7 次超標為 Critical。異常率分母使用 Valid Rows。",
-          metrics: [
-            { label: "異常事件數", value: anomalyData.events.toLocaleString(), tone: healthTone },
-            { label: "異常率", value: percent(anomalyRate), tone: healthTone },
-            { label: "Score P99", value: anomalyData.p99.toFixed(2), tone: healthTone },
-            { label: "Threshold", value: anomalyData.threshold.toFixed(2), tone: "ok" },
-            { label: "評測覆蓋率", value: percent(anomalyData.validRows / anomalyData.scoredRows), tone: healthStatus === "Critical" ? "warn" : "ok" }
-          ],
-          labeledRows: hasLabels ? anomalyData.labeledRows : 0,
-          secondaryMetrics: hasLabels ? [
-            { label: "Precision", value: anomalyData.precision, tone: "ok", tooltip: labelMetricTooltip },
-            { label: "Recall", value: anomalyData.recall, tone: "ok", tooltip: labelMetricTooltip },
-            { label: "F1-score", value: anomalyData.f1, tone: "ok", tooltip: labelMetricTooltip }
-          ] : [],
-          trendSeries: {
-            "異常數量": anomalyData.eventSeries,
-            "異常率": anomalyRateSeries,
-            "異常分數": anomalyData.p99Series
-          },
-          line: {
-            actual: anomalyData.p95Series,
-            prediction: anomalyData.p99Series,
-            baseline: anomalyData.p99Series.map(() => anomalyData.threshold)
-          },
-          quality: {
-            stats: [
-              ["SCORED_ROWS", anomalyData.scoredRows.toLocaleString()],
-              ["VALID_ROWS", anomalyData.validRows.toLocaleString()],
-              ["EXCLUDED_ROWS", anomalyData.excludedRows.toLocaleString()],
-              ...(hasLabels ? [["LABELED_ROWS", anomalyData.labeledRows.toLocaleString()]] : [])
-            ],
-            coverage: percent(anomalyData.validRows / anomalyData.scoredRows)
-          },
-          chart: {
-            trendTitle: "異常指標趨勢",
-            trendSubtitle: `評測期間：${period}`,
-            segments: ["異常數量", "異常率", "異常分數"],
-            comparisonTitle: "異常分數趨勢",
-            comparisonSubtitle: "分數 0-1",
-            legend: ["P95 Score", "P99 Score", "Threshold"]
-          }
-        };
-      }
-
-      if (model.kind === "recommender") {
-        const runData = model.id.includes("cooling")
-          ? {
-              totalRuns: 1284,
-              successfulRuns: 1256,
-              failedRuns: 28,
-              guardrailBlockedRuns: 59,
-              adoptableRuns: 1225,
-              adoptedRuns: 752,
-              p95Latency: "240",
-              scope: "3 output points",
-              scopePoints: ["plant.cooling_schedule", "plant.chw_supply_setpoint", "plant.chiller_sequence"],
-              successSeries: [92.6, 93.1, 93.8, 94.6, 95.2, 96.0, 96.4, 96.9, 97.2, 97.5, 97.6, 97.7, 97.8, 97.8],
-              adoptionSeries: [50.4, 51.8, 52.9, 54.2, 55.1, 56.4, 57.5, 58.3, 58.9, 59.1, 59.5, 59.8, 60.2, 58.6],
-              guardrailSeries: [6.4, 6.0, 5.8, 5.4, 5.2, 5.1, 4.9, 4.8, 4.7, 4.7, 4.6, 4.6, 4.6, 4.6],
-              latencySeries: [205, 212, 218, 225, 220, 232, 236, 241, 246, 250, 244, 242, 241, 240]
-            }
-          : {
-              totalRuns: 2416,
-              successfulRuns: 2397,
-              failedRuns: 19,
-              guardrailBlockedRuns: 75,
-              adoptableRuns: 2341,
-              adoptedRuns: 1608,
-              p95Latency: "190",
-              scope: "plant.chw_setpoint",
-              scopePoints: ["plant.chw_setpoint"],
-              successSeries: [97.4, 97.8, 98.1, 98.4, 98.6, 98.8, 99.0, 99.1, 99.1, 99.2, 99.2, 99.2, 99.2, 99.2],
-              adoptionSeries: [59.2, 60.1, 60.8, 61.4, 62.1, 62.8, 63.5, 64.1, 64.7, 65.1, 65.5, 65.9, 66.3, 66.6],
-              guardrailSeries: [4.8, 4.5, 4.3, 4.0, 3.8, 3.7, 3.5, 3.4, 3.3, 3.2, 3.2, 3.1, 3.1, 3.1],
-              latencySeries: [168, 172, 176, 181, 178, 184, 187, 190, 194, 196, 193, 191, 190, 190]
-            };
-        const successRate = runData.successfulRuns / runData.totalRuns;
-        const adoptionRate = runData.adoptedRuns / runData.totalRuns;
-        const guardrailRate = runData.guardrailBlockedRuns / runData.totalRuns;
-        return {
-          ...base,
-          targetScope: runData.scope,
-          targetScopePoints: runData.scopePoints,
-          healthRule: "Health Status 包含輸入特徵漂移狀態，取最嚴重特徵狀態；服務正常但任一特徵為 Warning 時，整體維持 Warning。",
-          metrics: [
-            { label: "執行成功率", value: percent(successRate), tone: "ok", tooltip: `Successful Runs ÷ Total Runs = ${runData.successfulRuns.toLocaleString()} ÷ ${runData.totalRuns.toLocaleString()}` },
-            { label: "採用率", value: percent(adoptionRate), tone: "ok", tooltip: `Adopted Runs ÷ Total Runs = ${runData.adoptedRuns.toLocaleString()} ÷ ${runData.totalRuns.toLocaleString()}` },
-            { label: "Guardrail 攔截率", value: percent(guardrailRate), tone: "warn", tooltip: `Guardrail Blocked Runs ÷ Total Runs = ${runData.guardrailBlockedRuns.toLocaleString()} ÷ ${runData.totalRuns.toLocaleString()}。Guardrail 攔截代表成功完成但未輸出，不計入 Failed Runs。` },
-            { label: "P95 Latency", value: runData.p95Latency, tone: "ok" }
-          ],
-          trendSeries: {
-            "成功率": runData.successSeries,
-            "採用率": runData.adoptionSeries,
-            "Guardrail 攔截率": runData.guardrailSeries
-          },
-          line: {
-            actual: runData.latencySeries
-          },
-          quality: {
-            stats: [
-              ["TOTAL_RUNS", runData.totalRuns.toLocaleString()],
-              ["SUCCESSFUL_RUNS", runData.successfulRuns.toLocaleString()],
-              ["FAILED_RUNS", runData.failedRuns.toLocaleString()],
-              ["GUARDRAIL_BLOCKED_RUNS", runData.guardrailBlockedRuns.toLocaleString()],
-              ["ADOPTED_RUNS", runData.adoptedRuns.toLocaleString()]
-            ]
-          },
-          chart: {
-            trendTitle: "推薦指標趨勢",
-            trendSubtitle: `統計期間：${period}`,
-            segments: ["成功率", "採用率", "Guardrail 攔截率"],
-            comparisonTitle: "P95 Latency 趨勢",
-            comparisonSubtitle: "P95 Latency",
-            legend: ["P95 Latency"],
-            periodLabel: "統計期間"
-          }
-        };
-      }
-
+    function lineFromChart(chart) {
+      const series = chart?.series || [];
       return {
-        ...base,
-        metrics: [
-          { label: "MAE", value: isCritical ? "84.2 kW" : "18.6 kW", tone: isCritical ? "bad" : "ok" },
-          { label: "MAPE", value: isCritical ? "31.5%" : model.mainMetric.replace(" (MAPE)", ""), tone: isCritical ? "bad" : "ok" },
-          { label: "Baseline MAPE", value: isCritical ? "17.6%" : "20.1%", tone: isCritical ? "warn" : "ok" },
-          { label: "Skill Score", value: isCritical ? "-6.4%" : `+${skillScore(12.4, 20.1)}`, tone: isCritical ? "bad" : "ok" },
-          { label: "評測覆蓋率", value: isCritical ? "92.1%" : "97.1%", tone: isCritical ? "warn" : "ok" }
-        ],
-        bars: model.bars || fallbackDetail.bars,
-        trendSeries: {
-          MAPE: model.bars || fallbackDetail.bars,
-          MAE: isCritical ? [42, 45, 44, 49, 52, 58, 63, 66, 72, 75, 79, 82, 86, 90] : [18, 17, 19, 16, 15, 17, 16, 15, 14, 15, 13, 14, 12, 13],
-          "Skill Score": isCritical ? [24, 21, 19, 17, 13, 10, 8, 4, 2, -1, -3, -4, -5, -6] : [12, 14, 15, 16, 17, 18, 19, 18, 20, 21, 20, 22, 21, 23]
-        },
-        line: model.line || fallbackDetail.line,
-        chart: {
-          trendTitle: "MAE / MAPE / Skill Score 趨勢",
-          trendSubtitle: `評測期間：${period}，單位：${model.target.includes("temp") ? "°C" : "kW"}`,
-          segments: ["MAE", "MAPE", "Skill Score"],
-          comparisonTitle: "Actual vs Prediction vs Baseline",
-          comparisonSubtitle: `${model.target}，單位：${model.target.includes("temp") ? "°C" : "kW"}`,
-          legend: ["Actual (實際值)", "Prediction (預測值)", "Baseline (基準預測)"]
-        }
+        actual: series[0]?.values || [],
+        prediction: series[1]?.values || [],
+        baseline: series[2]?.values || []
       };
     }
 
     function renderTabs() {
-      const tabs = [
-        ["all", "全部"],
-        ["forecast", "forecast"],
-        ["anomaly", "anomaly"],
-        ["recommender", "recommender"]
-      ];
-      document.getElementById("kindTabs").innerHTML = tabs.map(([key, label]) => (
+      const tabs = appData?.overview?.tabs || [];
+      document.getElementById("kindTabs").innerHTML = tabs.map(({ key, label }) => (
         `<button class="tab ${state.kind === key ? "active" : ""}" type="button" data-kind="${key}">${label}</button>`
       )).join("");
     }
@@ -1908,6 +1661,15 @@
         <span class="warn-text">Warning ${counts.warning}</span>
         <span class="bad-text">Critical ${counts.critical}</span>
       `;
+    }
+
+    function renderSortOptions() {
+      const sortSelect = document.getElementById("sortSelect");
+      const sortOptions = appData?.overview?.sortOptions || [];
+      if (!sortSelect || !sortOptions.length) return;
+      sortSelect.innerHTML = sortOptions.map((option) => (
+        `<option value="${option.key}">${option.label}</option>`
+      )).join("");
     }
 
 
@@ -1936,19 +1698,16 @@
         recommender: "operation recommendation"
       };
       const metricValue = (model, metric) => {
-        const critical = normalizeStatus(model.status) === "critical";
-        const warning = normalizeStatus(model.status) === "warning";
-        const cooling = model.id.includes("cooling");
         if (metric === "mape") return model.mainMetric.replace(" (MAPE)", "");
         if (metric === "skillScore") return model.skill;
         if (metric === "drift") return displayDrift(model.drift);
-        if (metric === "events") return model.id.includes("ct_water") ? "126 events" : "48 events";
-        if (metric === "anomalyRate") return model.id.includes("ct_water") ? "7.8%" : "3.2%";
-        if (metric === "scoreP99") return critical ? "0.94" : warning ? "0.78" : "0.42";
-        if (metric === "successRate") return cooling ? "97.8%" : "99.2%";
-        if (metric === "guardrailRate") return cooling ? "4.6%" : "3.1%";
-        if (metric === "p95Latency") return cooling ? "240 ms" : "190 ms";
-        if (metric === "scope") return cooling ? "3 output points" : "plant.chw_setpoint";
+        if (metric === "events") return model.overview?.events || "";
+        if (metric === "anomalyRate") return model.overview?.anomalyRate || "";
+        if (metric === "scoreP99") return model.overview?.scoreP99 || "";
+        if (metric === "successRate") return model.overview?.successRate || "";
+        if (metric === "guardrailRate") return model.overview?.guardrailRate || "";
+        if (metric === "p95Latency") return model.overview?.p95Latency || "";
+        if (metric === "scope") return model.targetScope || model.target;
         return "";
       };
       const metricTone = (model, metric) => {
@@ -2079,6 +1838,7 @@
     }
 
     function renderCriticalRows() {
+      document.getElementById("criticalUpdated").textContent = timeOnly(appData?.meta?.pageUpdatedAt);
       document.getElementById("criticalRows").innerHTML = criticalIssues.map((issue) => `
         <tr class="clickable" data-model-id="${issue.id}">
           <td><strong class="mono">${issue.id}</strong></td>
@@ -2086,7 +1846,7 @@
           <td class="bad-text">${issue.detail}</td>
           <td class="mono">${issue.asset}</td>
           <td>${issue.duration}</td>
-          <td><span class="badge bad">Critical</span></td>
+          <td><span class="badge ${statusTone(issue.severity)}">${issue.severity}</span></td>
         </tr>
       `).join("");
     }
@@ -2177,25 +1937,36 @@
       secondaryEl.innerHTML = secondary.map(metricHtml).join("");
     }
 
-    function renderBarChart(values) {
-      const max = Math.max(...values);
+    function axisLabelMarkup(labels, y) {
+      if (!labels.length) return "";
+      const positions = [0, Math.floor((labels.length - 1) / 3), Math.floor((labels.length - 1) * 2 / 3), labels.length - 1];
+      const uniquePositions = [...new Set(positions)];
+      return uniquePositions.map((index) => {
+        const x = 26 + (436 * (labels.length === 1 ? 0 : index / (labels.length - 1)));
+        return `<text x="${x.toFixed(0)}" y="${y}" font-size="10" fill="#69727b">${labels[index]}</text>`;
+      }).join("");
+    }
+
+    function renderBarChart(values, labels = []) {
+      if (!values.length) {
+        document.getElementById("barChart").innerHTML = "";
+        return;
+      }
+      const max = Math.max(...values.map((value) => Math.abs(value)), 1);
       const chartStart = 22;
       const chartEnd = 498;
       const gap = 9;
       const width = Math.max(12, Math.min(28, (chartEnd - chartStart - gap * (values.length - 1)) / values.length));
       const base = 220;
       const bars = values.map((value, index) => {
-        const height = Math.round(value / max * 135);
+        const height = Math.round(Math.abs(value) / max * 135);
         const x = chartStart + index * (width + gap);
-        const y = base - height;
-        return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="2" fill="#bed0d9"></rect>`;
+        const y = value >= 0 ? base - height : base;
+        return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="2" fill="${value >= 0 ? "#bed0d9" : "#f3b6b6"}"></rect>`;
       }).join("");
       document.getElementById("barChart").innerHTML = `
         ${bars}
-        <text x="20" y="244" font-size="10" fill="#69727b">07-01</text>
-        <text x="174" y="244" font-size="10" fill="#69727b">07-05</text>
-        <text x="328" y="244" font-size="10" fill="#69727b">07-10</text>
-        <text x="466" y="244" font-size="10" fill="#69727b">07-15</text>
+        ${axisLabelMarkup(labels, 244)}
       `;
     }
 
@@ -2218,12 +1989,16 @@
       }).join(" ");
     }
 
-    function renderLineChart(line) {
+    function renderLineChart(line, labels = []) {
       const series = [
         { values: line.actual || [], color: "#17637c", width: 5, dash: "" },
         { values: line.prediction || [], color: "#f14343", width: 5, dash: "" },
         { values: line.baseline || [], color: "#727b83", width: 4, dash: "18 12" }
       ].filter((item) => item.values.length);
+      if (!series.length) {
+        document.getElementById("lineChart").innerHTML = "";
+        return;
+      }
       const maxValue = Math.max(...series.flatMap((item) => item.values)) * 1.15 || 1;
       const gridValues = [0, .25, .5, .75, 1].map((ratio) => Math.round(maxValue * ratio * 10) / 10);
       const grid = gridValues.map((value, index) => {
@@ -2236,10 +2011,7 @@
       document.getElementById("lineChart").innerHTML = `
         ${grid}
         ${paths}
-        <text x="26" y="242" font-size="10" fill="#69727b">07-01</text>
-        <text x="176" y="242" font-size="10" fill="#69727b">07-05</text>
-        <text x="328" y="242" font-size="10" fill="#69727b">07-10</text>
-        <text x="462" y="242" font-size="10" fill="#69727b">07-15</text>
+        ${axisLabelMarkup(labels, 242)}
       `;
     }
 
@@ -2328,7 +2100,7 @@
       state.selectedModelId = id;
       const model = detailOf(modelById.get(id) || models[0]);
       if (!model.chart.segments.includes(state.trendMetric)) {
-        state.trendMetric = model.kind === "forecast" ? "MAPE" : model.chart.segments[0];
+        state.trendMetric = model.chart.defaultMetric;
       }
       document.getElementById("detailUpdated").textContent = model.updated;
       document.getElementById("trendChartTitle").textContent = model.chart.trendTitle;
@@ -2344,8 +2116,8 @@
       renderBasic(model);
       renderServiceInfo(model);
       renderMetrics(model);
-      renderBarChart(model.trendSeries?.[state.trendMetric] || model.bars);
-      renderLineChart(model.line);
+      renderBarChart(model.trendSeries?.[state.trendMetric] || model.bars, model.chart.xAxis.bar);
+      renderLineChart(model.line, model.chart.xAxis.line);
       renderFeatures(model);
       renderQuality(model);
     }
@@ -2371,6 +2143,7 @@
     }
 
     function renderOverview() {
+      renderSortOptions();
       renderTabs();
       renderOverallCounts();
       renderModelGroups();
@@ -2428,8 +2201,18 @@
     document.getElementById("backButton").addEventListener("click", showOverview);
     document.getElementById("exportButton").addEventListener("click", () => showToast("Demo：報告輸出已加入佇列"));
 
-    renderOverview();
-    renderDetail(state.selectedModelId);
+    async function init() {
+      try {
+        await loadData();
+        renderOverview();
+        renderDetail(state.selectedModelId);
+      } catch (error) {
+        document.getElementById("modelGroups").innerHTML = `<div class="model-group empty">${error.message}</div>`;
+        showToast(error.message);
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>
