@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="zh-Hant">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -479,18 +480,6 @@
     .kind-block.recommender .kind-head {
       background: #eef6f8;
       border-left-color: var(--brand);
-    }
-
-    .kind-icon {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-      display: grid;
-      place-items: center;
-      background: #fff;
-      border: 1px solid rgba(70, 86, 94, .18);
-      color: var(--brand);
-      font-size: 13px;
     }
 
     .kind-count {
@@ -1167,6 +1156,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="shell">
     <aside class="sidebar">
@@ -1217,17 +1207,17 @@
         </div>
 
         <div class="section-title-row">
-          <h3 class="section-title">依 Site 分組的模型清單</h3>
+          <h3 class="section-title">場地之模型</h3>
           <div class="sort-controls">
             <label for="sortSelect">依照</label>
             <select id="sortSelect" aria-label="選擇模型排序欄位">
-              <option value="modelId">Model ID</option>
+              <option value="model_id">Model ID</option>
               <option value="kind">Kind</option>
               <option value="status">Status</option>
               <option value="metric">主要指標</option>
               <option value="skill">Skill / 比較</option>
               <option value="drift">Drift</option>
-              <option value="lastEval">最後評測</option>
+              <option value="last_eval">最後評測</option>
             </select>
             <button class="sort-direction" id="sortDirectionButton" type="button" aria-label="切換排序方向">↑</button>
           </div>
@@ -1332,7 +1322,8 @@
             </thead>
             <tbody id="featureRows"></tbody>
           </table>
-          <div class="feature-foot">PSI：&lt; 0.10 Normal，0.10～0.25 Warning，&gt; 0.25 Critical。KS p-value：&gt;= 0.05 無顯著差異，&lt; 0.05 有顯著差異。</div>
+          <div class="feature-foot">PSI：&lt; 0.10 Normal，0.10～0.25 Warning，&gt; 0.25 Critical。KS p-value：&gt;= 0.05
+            無顯著差異，&lt; 0.05 有顯著差異。</div>
         </div>
 
         <div class="bottom-grid">
@@ -1359,7 +1350,7 @@
       query: "",
       selectedModelId: "predict.chiller_power_01",
       collapsedSiteIds: new Set(sites.map((site) => site.id)),
-      sort: { key: "modelId", direction: "asc" },
+      sort: { key: "model_id", direction: "asc" },
       trendMetric: "MAPE"
     };
 
@@ -1374,11 +1365,11 @@
       appData = await response.json();
       sites = appData.sites.map(normalizeSite);
       models = appData.models.map(normalizeModel);
-      criticalIssues = (appData.overview?.criticalModels || []).map((issue) => ({
-        id: issue.modelId,
-        site: issue.siteName,
-        detail: issue.issueValue,
-        asset: issue.impactedPoint,
+      criticalIssues = (appData.overview?.critical_models || []).map((issue) => ({
+        id: issue.model_id,
+        site: issue.site_name,
+        detail: issue.issue_value,
+        asset: issue.impacted_point,
         duration: issue.duration,
         severity: issue.severity || "Critical"
       }));
@@ -1389,7 +1380,7 @@
     }
 
     function normalizeSite(site) {
-      const status = displayStatus(site.healthStatus);
+      const status = displayStatus(site.health_status);
       return {
         id: site.id,
         name: site.name,
@@ -1405,29 +1396,34 @@
 
     function normalizeModel(model) {
       const overview = model.overview || {};
-      const target = model.targetPoint || model.targetScope || "";
-      const drift = model.driftStatus || overview.drift || model.healthStatus;
+      const target = model.target_point || model.target_scope || "";
+      const drift = model.drift_status || overview.drift || model.health_status;
       return {
         ...model,
-        type: model.modelKind,
-        status: model.healthStatus,
-        statusText: model.healthStatus,
+        siteId: model.site_id,
+        siteName: model.site_name,
+        shortId: model.short_id,
+        targetScope: model.target_scope,
+        targetScopePoints: model.target_scope_points,
+        type: model.model_kind,
+        status: model.health_status,
+        statusText: model.health_status,
         target,
-        version: model.modelVersion,
+        version: model.model_version,
         mainMetric: primaryMetricFromData(model),
         skill: comparisonMetricFromData(model),
         drift,
-        lastEval: model.lastEvaluated,
-        updated: model.evaluatedAt || model.statisticsUpdatedAt || appData?.meta?.pageUpdatedAt || "",
-        period: model.evaluationPeriod || model.statisticsPeriod || appData?.meta?.defaultPeriod?.label || "",
-        ops: normalizeServiceInfo(model.serviceInfo),
-        metrics: (model.metricCards || []).map(normalizeMetric),
-        secondaryMetrics: model.secondaryMetrics?.metrics || [],
-        labeledRows: model.secondaryMetrics?.labeledRows || 0,
-        features: (model.featureDrift || []).map((feature) => [
-          feature.featureName,
+        lastEval: model.last_evaluated,
+        updated: model.evaluated_at || model.statistics_updated_at || appData?.meta?.page_updated_at || "",
+        period: model.evaluation_period || model.statistics_period || appData?.meta?.default_period?.label || "",
+        ops: normalizeServiceInfo(model.service_info),
+        metrics: (model.metric_cards || []).map(normalizeMetric),
+        secondaryMetrics: model.secondary_metrics?.metrics || [],
+        labeledRows: model.secondary_metrics?.labeled_rows || 0,
+        features: (model.feature_drift || []).map((feature) => [
+          feature.feature_name,
           String(feature.psi),
-          String(feature.ksPValue),
+          String(feature.ks_p_value),
           String(feature.importance),
           feature.status
         ]),
@@ -1442,11 +1438,11 @@
     function normalizeServiceInfo(serviceInfo = {}) {
       return {
         online: serviceInfo.online,
-        lastSuccess: serviceInfo.lastSuccessfulRunAt,
-        successRate: serviceInfo.successRate,
-        errorRate: serviceInfo.errorRate,
-        p95Latency: serviceInfo.p95Latency,
-        deployedAt: serviceInfo.deployedAt
+        lastSuccess: serviceInfo.last_successful_run_at,
+        successRate: serviceInfo.success_rate,
+        errorRate: serviceInfo.error_rate,
+        p95Latency: serviceInfo.p95_latency,
+        deployedAt: serviceInfo.deployed_at
       };
     }
 
@@ -1461,38 +1457,38 @@
       const overview = model.overview || {};
       if (model.kind === "forecast") return `${overview.mape || ""} (MAPE)`;
       if (model.kind === "anomaly") return overview.events || "";
-      if (model.kind === "recommender") return overview.successRate || "";
+      if (model.kind === "recommender") return overview.success_rate || "";
       return "";
     }
 
     function comparisonMetricFromData(model) {
       const overview = model.overview || {};
-      if (model.kind === "forecast") return overview.skillScore || "";
-      if (model.kind === "anomaly") return `Anomaly Rate ${overview.anomalyRate || ""}`;
-      if (model.kind === "recommender") return `Guardrail Rate ${overview.guardrailRate || ""}`;
+      if (model.kind === "forecast") return overview.skill_score || "";
+      if (model.kind === "anomaly") return `Anomaly Rate ${overview.anomaly_rate || ""}`;
+      if (model.kind === "recommender") return `Guardrail Rate ${overview.guardrail_rate || ""}`;
       return "";
     }
 
     function normalizeQuality(model) {
       const qualityMap = {
         forecast: [
-          ["PREDICTION_COUNT", model.evaluationDataQuality?.predictionCount],
-          ["ACTUAL_COUNT", model.evaluationDataQuality?.actualCount],
-          ["JOINED_ROWS", model.evaluationDataQuality?.joinedRows],
-          ["EXCLUDED_ROWS", model.evaluationDataQuality?.excludedActualRows]
+          ["PREDICTION_COUNT", model.evaluation_data_quality?.prediction_count],
+          ["ACTUAL_COUNT", model.evaluation_data_quality?.actual_count],
+          ["JOINED_ROWS", model.evaluation_data_quality?.joined_rows],
+          ["EXCLUDED_ROWS", model.evaluation_data_quality?.excluded_actual_rows]
         ],
         anomaly: [
-          ["SCORED_ROWS", model.scoringStats?.scoredRows],
-          ["VALID_ROWS", model.scoringStats?.validRows],
-          ["EXCLUDED_ROWS", model.scoringStats?.excludedRows],
-          ["LABELED_ROWS", model.scoringStats?.labeledRows]
+          ["SCORED_ROWS", model.scoring_stats?.scored_rows],
+          ["VALID_ROWS", model.scoring_stats?.valid_rows],
+          ["EXCLUDED_ROWS", model.scoring_stats?.excluded_rows],
+          ["LABELED_ROWS", model.scoring_stats?.labeled_rows]
         ],
         recommender: [
-          ["TOTAL_RUNS", model.executionStats?.totalRuns],
-          ["SUCCESSFUL_RUNS", model.executionStats?.successfulRuns],
-          ["FAILED_RUNS", model.executionStats?.failedRuns],
-          ["GUARDRAIL_BLOCKED_RUNS", model.executionStats?.guardrailBlockedRuns],
-          ["ADOPTED_RUNS", model.executionStats?.adoptedRuns]
+          ["TOTAL_RUNS", model.execution_stats?.total_runs],
+          ["SUCCESSFUL_RUNS", model.execution_stats?.successful_runs],
+          ["FAILED_RUNS", model.execution_stats?.failed_runs],
+          ["GUARDRAIL_BLOCKED_RUNS", model.execution_stats?.guardrail_blocked_runs],
+          ["ADOPTED_RUNS", model.execution_stats?.adopted_runs]
         ]
       };
       return {
@@ -1564,13 +1560,13 @@
     const timeOnly = (value) => String(value || "").split(" ")[1]?.slice(0, 5) || value || "--";
 
     const sortValue = (model, key) => {
-      if (key === "modelId") return model.id;
+      if (key === "model_id") return model.id;
       if (key === "kind") return model.kind;
       if (key === "status") return statusRank(model.status);
       if (key === "metric") return numberFrom(primaryMetric(model));
       if (key === "skill") return numberFrom(comparisonMetric(model));
       if (key === "drift") return statusRank(model.drift);
-      if (key === "lastEval") return model.lastEval;
+      if (key === "last_eval") return model.lastEval;
       return model.id;
     };
 
@@ -1604,21 +1600,21 @@
         trendTitle: barChart?.title || "",
         trendSubtitle: barChart?.subtitle || "",
         segments: (barChart?.series || []).map((series) => series.name),
-        defaultMetric: barChart?.defaultMetric || barChart?.series?.[0]?.name || "",
+        defaultMetric: barChart?.default_metric || barChart?.series?.[0]?.name || "",
         comparisonTitle: lineChart?.title || "",
         comparisonSubtitle: lineChart?.subtitle || "",
         legend: (lineChart?.series || []).map((series) => series.name),
         xAxis: {
-          bar: barChart?.xAxis || [],
-          line: lineChart?.xAxis || []
+          bar: barChart?.x_axis || [],
+          line: lineChart?.x_axis || []
         }
       };
       return {
         ...model,
         healthStatus: displayStatus(model.status),
         healthTone: statusTone(model.status),
-        healthRule: appData?.rules?.healthStatus?.[model.kind] || "",
-        siteName: site?.name || model.siteName || "",
+        healthRule: appData?.rules?.health_status?.[model.kind] || "",
+        siteName: site?.name || model.site_name || "",
         siteCode: site?.id || model.siteId,
         evaluatedAt: model.updated,
         statuses: {
@@ -1629,7 +1625,7 @@
           overall: displayStatus(model.status)
         },
         trendSeries,
-        bars: trendSeries[barChart?.defaultMetric] || barChart?.series?.[0]?.values || [],
+        bars: trendSeries[barChart?.default_metric] || barChart?.series?.[0]?.values || [],
         line,
         chart
       };
@@ -1665,7 +1661,7 @@
 
     function renderSortOptions() {
       const sortSelect = document.getElementById("sortSelect");
-      const sortOptions = appData?.overview?.sortOptions || [];
+      const sortOptions = appData?.overview?.sort_options || [];
       if (!sortSelect || !sortOptions.length) return;
       sortSelect.innerHTML = sortOptions.map((option) => (
         `<option value="${option.key}">${option.label}</option>`
@@ -1687,11 +1683,6 @@
         anomaly: "Anomaly",
         recommender: "Recommender"
       };
-      const kindIcons = {
-        forecast: "ƒ",
-        anomaly: "!",
-        recommender: "★"
-      };
       const kindDescriptions = {
         forecast: "prediction accuracy",
         anomaly: "event detection",
@@ -1699,21 +1690,21 @@
       };
       const metricValue = (model, metric) => {
         if (metric === "mape") return model.mainMetric.replace(" (MAPE)", "");
-        if (metric === "skillScore") return model.skill;
+        if (metric === "skill_score") return model.skill;
         if (metric === "drift") return displayDrift(model.drift);
         if (metric === "events") return model.overview?.events || "";
-        if (metric === "anomalyRate") return model.overview?.anomalyRate || "";
-        if (metric === "scoreP99") return model.overview?.scoreP99 || "";
-        if (metric === "successRate") return model.overview?.successRate || "";
-        if (metric === "guardrailRate") return model.overview?.guardrailRate || "";
-        if (metric === "p95Latency") return model.overview?.p95Latency || "";
-        if (metric === "scope") return model.targetScope || model.target;
+        if (metric === "anomaly_rate") return model.overview?.anomaly_rate || "";
+        if (metric === "score_p99") return model.overview?.score_p99 || "";
+        if (metric === "success_rate") return model.overview?.success_rate || "";
+        if (metric === "guardrail_rate") return model.overview?.guardrail_rate || "";
+        if (metric === "p95_latency") return model.overview?.p95_latency || "";
+        if (metric === "scope") return model.target_scope || model.target;
         return "";
       };
       const metricTone = (model, metric) => {
         if (metric === "drift") return statusTone(model.drift);
-        if (metric === "mape" || metric === "events" || metric === "anomalyRate" || metric === "scoreP99") return statusTone(model.status);
-        if (metric === "skillScore") return model.skill.includes("-") ? "bad" : "ok";
+        if (metric === "mape" || metric === "events" || metric === "anomaly_rate" || metric === "score_p99") return statusTone(model.status);
+        if (metric === "skill_score") return model.skill.includes("-") ? "bad" : "ok";
         return "ok";
       };
       const kindColumns = {
@@ -1722,7 +1713,7 @@
           ["Target Point", (model) => `<span class="mono">${model.target}</span>`],
           ["Health Status", (model) => `<span class="${statusTone(model.status)}-text">${displayStatus(model.status)}</span>`],
           ["MAPE", (model) => metricValue(model, "mape")],
-          ["Skill Score", (model) => `<span class="${metricTone(model, "skillScore")}-text">${metricValue(model, "skillScore")}</span>`],
+          ["Skill Score", (model) => `<span class="${metricTone(model, "skill_score")}-text">${metricValue(model, "skill_score")}</span>`],
           ["Drift", (model) => `<span class="${metricTone(model, "drift")}-text">${metricValue(model, "drift")}</span>`],
           ["Last Evaluated", (model) => model.lastEval]
         ],
@@ -1731,17 +1722,17 @@
           ["Target Point", (model) => `<span class="mono">${model.target}</span>`],
           ["Health Status", (model) => `<span class="${statusTone(model.status)}-text">${displayStatus(model.status)}</span>`],
           ["Events", (model) => metricValue(model, "events")],
-          ["Anomaly Rate", (model) => `<span class="${metricTone(model, "anomalyRate")}-text">${metricValue(model, "anomalyRate")}</span>`],
-          ["Score P99", (model) => `<span class="${metricTone(model, "scoreP99")}-text">${metricValue(model, "scoreP99")}</span>`],
+          ["Anomaly Rate", (model) => `<span class="${metricTone(model, "anomaly_rate")}-text">${metricValue(model, "anomaly_rate")}</span>`],
+          ["Score P99", (model) => `<span class="${metricTone(model, "score_p99")}-text">${metricValue(model, "score_p99")}</span>`],
           ["Last Evaluated", (model) => model.lastEval]
         ],
         recommender: [
           ["Model ID", (model) => `<span class="mono">${model.id}</span>`],
           ["Target / Scope", (model) => `<span class="mono">${metricValue(model, "scope")}</span>`],
           ["Health Status", (model) => `<span class="${statusTone(model.status)}-text">${displayStatus(model.status)}</span>`],
-          ["Success Rate", (model) => `<span class="${metricTone(model, "successRate")}-text">${metricValue(model, "successRate")}</span>`],
-          ["P95 Latency", (model) => metricValue(model, "p95Latency")],
-          ["Guardrail Rate", (model) => `<span class="${metricTone(model, "guardrailRate")}-text">${metricValue(model, "guardrailRate")}</span>`],
+          ["Success Rate", (model) => `<span class="${metricTone(model, "success_rate")}-text">${metricValue(model, "success_rate")}</span>`],
+          ["P95 Latency", (model) => metricValue(model, "p95_latency")],
+          ["Guardrail Rate", (model) => `<span class="${metricTone(model, "guardrail_rate")}-text">${metricValue(model, "guardrail_rate")}</span>`],
           ["Last Evaluated", (model) => model.lastEval]
         ]
       };
@@ -1761,7 +1752,6 @@
           <div class="kind-block ${kind}">
             <div class="kind-head">
               <div class="kind-head-main">
-                <span class="kind-icon">${kindIcons[kind]}</span>
                 <span>${kindLabels[kind]}</span>
                 <span class="kind-count">${kindModels.length} models</span>
               </div>
@@ -1838,7 +1828,7 @@
     }
 
     function renderCriticalRows() {
-      document.getElementById("criticalUpdated").textContent = timeOnly(appData?.meta?.pageUpdatedAt);
+      document.getElementById("criticalUpdated").textContent = timeOnly(appData?.meta?.page_updated_at);
       document.getElementById("criticalRows").innerHTML = criticalIssues.map((issue) => `
         <tr class="clickable" data-model-id="${issue.id}">
           <td><strong class="mono">${issue.id}</strong></td>
@@ -2070,22 +2060,22 @@
       const counts = qualityCounts(model);
       document.getElementById("qualityTitle").textContent = model.kind === "recommender" ? "推薦執行統計" : "評測資料品質";
       const qualityRows = model.kind === "anomaly" ? [
-            ["Scored Rows", counts.scoredRows.toLocaleString()],
-            ["Valid Rows", counts.validRows.toLocaleString()],
-            ["Excluded Rows", counts.excludedRows.toLocaleString()],
-            ...(counts.labeledRows ? [["Labeled Rows", counts.labeledRows.toLocaleString()]] : [])
-          ] : model.kind === "recommender" ? [
-            ["Total Runs", counts.totalRuns.toLocaleString()],
-            ["Successful Runs", counts.successfulRuns.toLocaleString(), "Successful Runs 包含 Guardrail Blocked Runs；攔截代表成功完成但未輸出。"],
-            ["Failed Runs", counts.failedRuns.toLocaleString(), "Failed Runs 不包含 Guardrail Blocked Runs；Successful Runs + Failed Runs = Total Runs。"],
-            ["Guardrail Blocked Runs", counts.guardrailBlockedRuns.toLocaleString(), "Guardrail Blocked Runs 是 Successful Runs 的子集合，不計入 Failed Runs。"],
-            ["Adopted Runs", counts.adoptedRuns.toLocaleString()]
-          ] : [
-            ["Prediction Count", counts.predictionCount.toLocaleString()],
-            ["Actual Count", counts.actualCount.toLocaleString()],
-            ["Joined Rows", counts.joinedRows.toLocaleString()],
-            ["Excluded Actual Rows", counts.excludedRows.toLocaleString()]
-          ];
+        ["Scored Rows", counts.scoredRows.toLocaleString()],
+        ["Valid Rows", counts.validRows.toLocaleString()],
+        ["Excluded Rows", counts.excludedRows.toLocaleString()],
+        ...(counts.labeledRows ? [["Labeled Rows", counts.labeledRows.toLocaleString()]] : [])
+      ] : model.kind === "recommender" ? [
+        ["Total Runs", counts.totalRuns.toLocaleString()],
+        ["Successful Runs", counts.successfulRuns.toLocaleString(), "Successful Runs 包含 Guardrail Blocked Runs；攔截代表成功完成但未輸出。"],
+        ["Failed Runs", counts.failedRuns.toLocaleString(), "Failed Runs 不包含 Guardrail Blocked Runs；Successful Runs + Failed Runs = Total Runs。"],
+        ["Guardrail Blocked Runs", counts.guardrailBlockedRuns.toLocaleString(), "Guardrail Blocked Runs 是 Successful Runs 的子集合，不計入 Failed Runs。"],
+        ["Adopted Runs", counts.adoptedRuns.toLocaleString()]
+      ] : [
+        ["Prediction Count", counts.predictionCount.toLocaleString()],
+        ["Actual Count", counts.actualCount.toLocaleString()],
+        ["Joined Rows", counts.joinedRows.toLocaleString()],
+        ["Excluded Actual Rows", counts.excludedRows.toLocaleString()]
+      ];
 
       document.getElementById("qualityStats").innerHTML = qualityRows.map(([label, value, title]) => `
         <div class="quality-stat" ${title ? `title="${title}"` : ""}>
@@ -2215,4 +2205,5 @@
     init();
   </script>
 </body>
+
 </html>

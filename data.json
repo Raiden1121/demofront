@@ -2,100 +2,191 @@
   "meta": {
     "product": "AIoTers DevOps",
     "page": "model-management-demo",
-    "pageUpdatedAt": "2024-07-15 14:45:00",
-    "defaultPeriod": {
+    "page_updated_at": "2024-07-15 14:45:00",
+    "default_period": {
       "label": "2024-07-01 ~ 2024-07-15",
       "start": "2024-07-01",
       "end": "2024-07-15"
     }
   },
   "rules": {
-    "healthStatus": {
+    "health_status": {
       "forecast": "Health Status includes model performance and input feature drift. The worst state is shown.",
       "anomaly": "P99 > Threshold is Warning. P99 >= 0.90 or seven consecutive P99 breaches is Critical.",
       "recommender": "Health Status includes input feature drift. If service metrics are normal but any feature is Warning, overall status remains Warning."
     },
     "drift": {
       "psi": [
-        { "status": "Normal", "condition": "PSI < 0.10" },
-        { "status": "Warning", "condition": "0.10 <= PSI <= 0.25" },
-        { "status": "Critical", "condition": "PSI > 0.25" }
+        {
+          "status": "Normal",
+          "condition": "PSI < 0.10"
+        },
+        {
+          "status": "Warning",
+          "condition": "0.10 <= PSI <= 0.25"
+        },
+        {
+          "status": "Critical",
+          "condition": "PSI > 0.25"
+        }
       ],
-      "ksPValue": [
-        { "meaning": "No significant difference", "condition": "KS p-value >= 0.05" },
-        { "meaning": "Significant difference", "condition": "KS p-value < 0.05" }
+      "ks_p_value": [
+        {
+          "meaning": "No significant difference",
+          "condition": "KS p-value >= 0.05"
+        },
+        {
+          "meaning": "Significant difference",
+          "condition": "KS p-value < 0.05"
+        }
       ],
-      "sortOrder": ["Critical", "Warning", "Normal"]
+      "sort_order": [
+        "Critical",
+        "Warning",
+        "Normal"
+      ]
     },
     "formulas": {
-      "forecastSkillScore": "1 - MAPE / Baseline MAPE",
-      "forecastAlignmentRate": "Joined Rows / Prediction Count",
-      "anomalyRate": "Events / Valid Rows",
-      "anomalyCoverage": "Valid Rows / Scored Rows",
-      "recommenderSuccessRate": "Successful Runs / Total Runs",
-      "recommenderAdoptionRate": "Adopted Runs / Total Runs",
-      "recommenderGuardrailRate": "Guardrail Blocked Runs / Total Runs"
+      "forecast_skill_score": "1 - MAPE / Baseline MAPE",
+      "forecast_alignment_rate": "Joined Rows / Prediction Count",
+      "anomaly_rate": "Events / Valid Rows",
+      "anomaly_coverage": "Valid Rows / Scored Rows",
+      "recommender_success_rate": "Successful Runs / Total Runs",
+      "recommender_adoption_rate": "Adopted Runs / Total Runs",
+      "recommender_guardrail_rate": "Guardrail Blocked Runs / Total Runs"
     },
-    "guardrailBlockedRuns": {
+    "guardrail_blocked_runs": {
       "definition": "Guardrail Blocked Runs are successful completed runs with no output emitted.",
-      "countingRule": "Guardrail Blocked Runs are included in Successful Runs and excluded from Failed Runs. Successful Runs + Failed Runs = Total Runs."
+      "counting_rule": "Guardrail Blocked Runs are included in Successful Runs and excluded from Failed Runs. Successful Runs + Failed Runs = Total Runs."
     }
   },
   "sites": [
     {
       "id": "site_tpe_chw_01",
       "name": "台北冰水主機房",
-      "healthStatus": "Warning",
-      "stats": { "total": 3, "normal": 2, "warning": 1, "critical": 0 }
+      "health_status": "Warning",
+      "stats": {
+        "total": 3,
+        "normal": 2,
+        "warning": 1,
+        "critical": 0
+      }
     },
     {
       "id": "site_txg_hvac_02",
       "name": "台中空調機房",
-      "healthStatus": "Critical",
-      "stats": { "total": 2, "normal": 1, "warning": 0, "critical": 1 }
+      "health_status": "Critical",
+      "stats": {
+        "total": 2,
+        "normal": 1,
+        "warning": 0,
+        "critical": 1
+      }
     },
     {
       "id": "site_khh_energy_03",
       "name": "高雄能源中心",
-      "healthStatus": "Critical",
-      "stats": { "total": 2, "normal": 1, "warning": 0, "critical": 1 }
+      "health_status": "Critical",
+      "stats": {
+        "total": 2,
+        "normal": 1,
+        "warning": 0,
+        "critical": 1
+      }
     }
   ],
   "overview": {
     "tabs": [
-      { "key": "all", "label": "全部" },
-      { "key": "forecast", "label": "forecast" },
-      { "key": "anomaly", "label": "anomaly" },
-      { "key": "recommender", "label": "recommender" }
-    ],
-    "sortOptions": [
-      { "key": "modelId", "label": "Model ID" },
-      { "key": "kind", "label": "Kind" },
-      { "key": "status", "label": "Status" },
-      { "key": "metric", "label": "主要指標" },
-      { "key": "skill", "label": "Skill / 比較" },
-      { "key": "drift", "label": "Drift" },
-      { "key": "lastEval", "label": "最後評測" }
-    ],
-    "columnsByKind": {
-      "forecast": ["Model ID", "Target Point", "Health Status", "MAPE", "Skill Score", "Drift", "Last Evaluated"],
-      "anomaly": ["Model ID", "Target Point", "Health Status", "Events", "Anomaly Rate", "Score P99", "Last Evaluated"],
-      "recommender": ["Model ID", "Target / Scope", "Health Status", "Success Rate", "P95 Latency", "Guardrail Rate", "Last Evaluated"]
-    },
-    "criticalModels": [
       {
-        "modelId": "predict.chiller_power_01",
-        "siteName": "台中空調機房",
-        "issueValue": "Skill Score -6.4% / Drift Critical",
-        "impactedPoint": "plant.chiller_01.power",
+        "key": "all",
+        "label": "全部"
+      },
+      {
+        "key": "forecast",
+        "label": "forecast"
+      },
+      {
+        "key": "anomaly",
+        "label": "anomaly"
+      },
+      {
+        "key": "recommender",
+        "label": "recommender"
+      }
+    ],
+    "sort_options": [
+      {
+        "key": "model_id",
+        "label": "Model ID"
+      },
+      {
+        "key": "kind",
+        "label": "Kind"
+      },
+      {
+        "key": "status",
+        "label": "Status"
+      },
+      {
+        "key": "metric",
+        "label": "主要指標"
+      },
+      {
+        "key": "skill",
+        "label": "Skill / 比較"
+      },
+      {
+        "key": "drift",
+        "label": "Drift"
+      },
+      {
+        "key": "last_eval",
+        "label": "最後評測"
+      }
+    ],
+    "columns_by_kind": {
+      "forecast": [
+        "Model ID",
+        "Target Point",
+        "Health Status",
+        "MAPE",
+        "Skill Score",
+        "Drift",
+        "Last Evaluated"
+      ],
+      "anomaly": [
+        "Model ID",
+        "Target Point",
+        "Health Status",
+        "Events",
+        "Anomaly Rate",
+        "Score P99",
+        "Last Evaluated"
+      ],
+      "recommender": [
+        "Model ID",
+        "Target / Scope",
+        "Health Status",
+        "Success Rate",
+        "P95 Latency",
+        "Guardrail Rate",
+        "Last Evaluated"
+      ]
+    },
+    "critical_models": [
+      {
+        "model_id": "predict.chiller_power_01",
+        "site_name": "台中空調機房",
+        "issue_value": "Skill Score -6.4% / Drift Critical",
+        "impacted_point": "plant.chiller_01.power",
         "duration": "已持續 3 天",
         "severity": "Critical"
       },
       {
-        "modelId": "anomaly.ct_water_temp_01",
-        "siteName": "高雄能源中心",
-        "issueValue": "Anomaly Events 126 / Anomaly Rate 7.8%",
-        "impactedPoint": "tower.ct_03.temp",
+        "model_id": "anomaly.ct_water_temp_01",
+        "site_name": "高雄能源中心",
+        "issue_value": "Anomaly Events 126 / Anomaly Rate 7.8%",
+        "impacted_point": "tower.ct_03.temp",
         "duration": "已持續 1 天",
         "severity": "Critical"
       }
@@ -105,48 +196,141 @@
     {
       "id": "predict.chilled_water_01",
       "kind": "forecast",
-      "modelKind": "forecast / LightGBM",
-      "siteId": "site_tpe_chw_01",
-      "siteName": "台北冰水主機房",
-      "targetPoint": "plant.chw_supply_temp",
-      "modelVersion": "v2.8.4",
-      "healthStatus": "Warning",
-      "driftStatus": "Warning",
-      "lastEvaluated": "07-15 14:30",
-      "evaluatedAt": "2024-07-15 14:30:00",
-      "evaluationPeriod": "2024-07-01 ~ 2024-07-15",
+      "model_kind": "forecast / LightGBM",
+      "site_id": "site_tpe_chw_01",
+      "site_name": "台北冰水主機房",
+      "target_point": "plant.chw_supply_temp",
+      "model_version": "v2.8.4",
+      "health_status": "Warning",
+      "drift_status": "Warning",
+      "last_evaluated": "07-15 14:30",
+      "evaluated_at": "2024-07-15 14:30:00",
+      "evaluation_period": "2024-07-01 ~ 2024-07-15",
       "overview": {
         "mape": "12.4%",
-        "skillScore": "+38.3%",
+        "skill_score": "+38.3%",
         "drift": "Normal"
       },
-      "serviceInfo": {
+      "service_info": {
         "online": "Online",
-        "lastSuccessfulRunAt": "2024-07-15 14:30:00",
-        "successRate": "99.1%",
-        "errorRate": "0.9%",
-        "p95Latency": "180 ms",
-        "deployedAt": "2024-07-08 10:30:00"
+        "last_successful_run_at": "2024-07-15 14:30:00",
+        "success_rate": "99.1%",
+        "error_rate": "0.9%",
+        "p95_latency": "180 ms",
+        "deployed_at": "2024-07-08 10:30:00"
       },
-      "metricCards": [
-        { "label": "MAE", "value": "18.6 kW", "tone": "ok" },
-        { "label": "MAPE", "value": "12.4%", "tone": "ok" },
-        { "label": "Baseline MAPE", "value": "20.1%", "tone": "ok" },
-        { "label": "Skill Score", "value": "+38.3%", "tone": "ok", "formula": "1 - 12.4 / 20.1" },
-        { "label": "評測覆蓋率", "value": "97.1%", "tone": "ok" }
+      "metric_cards": [
+        {
+          "label": "MAE",
+          "value": "18.6 kW",
+          "tone": "ok"
+        },
+        {
+          "label": "MAPE",
+          "value": "12.4%",
+          "tone": "ok"
+        },
+        {
+          "label": "Baseline MAPE",
+          "value": "20.1%",
+          "tone": "ok"
+        },
+        {
+          "label": "Skill Score",
+          "value": "+38.3%",
+          "tone": "ok",
+          "formula": "1 - 12.4 / 20.1"
+        },
+        {
+          "label": "評測覆蓋率",
+          "value": "97.1%",
+          "tone": "ok"
+        }
       ],
       "charts": [
         {
           "id": "forecast_metrics_trend",
           "title": "MAE / MAPE / Skill Score 趨勢",
           "subtitle": "評測期間：2024-07-01 ~ 2024-07-15，單位：°C",
-          "defaultMetric": "MAPE",
+          "default_metric": "MAPE",
           "type": "bar",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "MAE", "unit": "°C", "values": [18, 17, 19, 16, 15, 17, 16, 15, 14, 15, 13, 14, 12, 13] },
-            { "name": "MAPE", "unit": "%", "values": [68, 70, 66, 69, 71, 70, 67, 65, 66, 64, 63, 62, 61, 60] },
-            { "name": "Skill Score", "unit": "%", "values": [12, 14, 15, 16, 17, 18, 19, 18, 20, 21, 20, 22, 21, 23] }
+            {
+              "name": "MAE",
+              "unit": "°C",
+              "values": [
+                18,
+                17,
+                19,
+                16,
+                15,
+                17,
+                16,
+                15,
+                14,
+                15,
+                13,
+                14,
+                12,
+                13
+              ]
+            },
+            {
+              "name": "MAPE",
+              "unit": "%",
+              "values": [
+                68,
+                70,
+                66,
+                69,
+                71,
+                70,
+                67,
+                65,
+                66,
+                64,
+                63,
+                62,
+                61,
+                60
+              ]
+            },
+            {
+              "name": "Skill Score",
+              "unit": "%",
+              "values": [
+                12,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                18,
+                20,
+                21,
+                20,
+                22,
+                21,
+                23
+              ]
+            }
           ]
         },
         {
@@ -154,73 +338,246 @@
           "title": "Actual vs Prediction vs Baseline",
           "subtitle": "plant.chw_supply_temp，單位：°C",
           "type": "line",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-15"
+          ],
           "series": [
-            { "name": "Actual", "values": [410, 425, 415, 440, 458, 470, 486, 510, 535, 522, 548] },
-            { "name": "Prediction", "values": [398, 430, 405, 448, 452, 465, 492, 500, 528, 530, 541] },
-            { "name": "Baseline", "values": [360, 380, 372, 400, 420, 432, 450, 468, 486, 478, 492] }
+            {
+              "name": "Actual",
+              "values": [
+                410,
+                425,
+                415,
+                440,
+                458,
+                470,
+                486,
+                510,
+                535,
+                522,
+                548
+              ]
+            },
+            {
+              "name": "Prediction",
+              "values": [
+                398,
+                430,
+                405,
+                448,
+                452,
+                465,
+                492,
+                500,
+                528,
+                530,
+                541
+              ]
+            },
+            {
+              "name": "Baseline",
+              "values": [
+                360,
+                380,
+                372,
+                400,
+                420,
+                432,
+                450,
+                468,
+                486,
+                478,
+                492
+              ]
+            }
           ]
         }
       ],
-      "featureDrift": [
-        { "featureName": "flow_rate", "psi": 0.132, "ksPValue": 0.078, "importance": 0.174, "status": "Warning" },
-        { "featureName": "supply_temp", "psi": 0.104, "ksPValue": 0.182, "importance": 0.268, "status": "Warning" },
-        { "featureName": "return_temp", "psi": 0.086, "ksPValue": 0.210, "importance": 0.193, "status": "Normal" },
-        { "featureName": "outdoor_temp", "psi": 0.074, "ksPValue": 0.244, "importance": 0.151, "status": "Normal" }
+      "feature_drift": [
+        {
+          "feature_name": "flow_rate",
+          "psi": 0.132,
+          "ks_p_value": 0.078,
+          "importance": 0.174,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "supply_temp",
+          "psi": 0.104,
+          "ks_p_value": 0.182,
+          "importance": 0.268,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "return_temp",
+          "psi": 0.086,
+          "ks_p_value": 0.21,
+          "importance": 0.193,
+          "status": "Normal"
+        },
+        {
+          "feature_name": "outdoor_temp",
+          "psi": 0.074,
+          "ks_p_value": 0.244,
+          "importance": 0.151,
+          "status": "Normal"
+        }
       ],
-      "evaluationDataQuality": {
-        "predictionCount": 12880,
-        "actualCount": 12764,
-        "joinedRows": 12502,
-        "excludedActualRows": 262
+      "evaluation_data_quality": {
+        "prediction_count": 12880,
+        "actual_count": 12764,
+        "joined_rows": 12502,
+        "excluded_actual_rows": 262
       }
     },
     {
       "id": "predict.chiller_power_01",
-      "shortId": "predict.chiller_powe...",
+      "short_id": "predict.chiller_powe...",
       "kind": "forecast",
-      "modelKind": "forecast / XGBoost Regressor",
-      "siteId": "site_txg_hvac_02",
-      "siteName": "台中空調機房",
-      "targetPoint": "plant.chiller_power_kw",
-      "modelVersion": "v3.2.1",
-      "healthStatus": "Critical",
-      "driftStatus": "Critical",
-      "lastEvaluated": "07-15 14:08",
-      "evaluatedAt": "2024-07-15 14:08:00",
-      "evaluationPeriod": "2024-07-01 ~ 2024-07-15",
+      "model_kind": "forecast / XGBoost Regressor",
+      "site_id": "site_txg_hvac_02",
+      "site_name": "台中空調機房",
+      "target_point": "plant.chiller_power_kw",
+      "model_version": "v3.2.1",
+      "health_status": "Critical",
+      "drift_status": "Critical",
+      "last_evaluated": "07-15 14:08",
+      "evaluated_at": "2024-07-15 14:08:00",
+      "evaluation_period": "2024-07-01 ~ 2024-07-15",
       "overview": {
         "mape": "31.5%",
-        "skillScore": "-6.4%",
+        "skill_score": "-6.4%",
         "drift": "Critical"
       },
-      "serviceInfo": {
+      "service_info": {
         "online": "Offline",
-        "lastSuccessfulRunAt": "2024-07-15 13:42:10",
-        "successRate": "91.2%",
-        "errorRate": "8.8%",
-        "p95Latency": "840 ms",
-        "deployedAt": "2024-07-08 10:30:00"
+        "last_successful_run_at": "2024-07-15 13:42:10",
+        "success_rate": "91.2%",
+        "error_rate": "8.8%",
+        "p95_latency": "840 ms",
+        "deployed_at": "2024-07-08 10:30:00"
       },
-      "metricCards": [
-        { "label": "MAE", "value": "84.2 kW", "tone": "bad" },
-        { "label": "MAPE", "value": "31.5%", "tone": "bad" },
-        { "label": "Baseline MAPE", "value": "17.6%", "tone": "warn" },
-        { "label": "Skill Score", "value": "-6.4%", "tone": "bad" },
-        { "label": "評測覆蓋率", "value": "92.1%", "tone": "warn" }
+      "metric_cards": [
+        {
+          "label": "MAE",
+          "value": "84.2 kW",
+          "tone": "bad"
+        },
+        {
+          "label": "MAPE",
+          "value": "31.5%",
+          "tone": "bad"
+        },
+        {
+          "label": "Baseline MAPE",
+          "value": "17.6%",
+          "tone": "warn"
+        },
+        {
+          "label": "Skill Score",
+          "value": "-6.4%",
+          "tone": "bad"
+        },
+        {
+          "label": "評測覆蓋率",
+          "value": "92.1%",
+          "tone": "warn"
+        }
       ],
       "charts": [
         {
           "id": "forecast_metrics_trend",
           "title": "MAE / MAPE / Skill Score 趨勢",
           "subtitle": "評測期間：2024-07-01 ~ 2024-07-15，單位：kW",
-          "defaultMetric": "MAPE",
+          "default_metric": "MAPE",
           "type": "bar",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "MAE", "unit": "kW", "values": [42, 45, 44, 49, 52, 58, 63, 66, 72, 75, 79, 82, 86, 90] },
-            { "name": "MAPE", "unit": "%", "values": [78, 82, 74, 88, 85, 79, 94, 98, 108, 102, 118, 123, 137, 141] },
-            { "name": "Skill Score", "unit": "%", "values": [24, 21, 19, 17, 13, 10, 8, 4, 2, -1, -3, -4, -5, -6] }
+            {
+              "name": "MAE",
+              "unit": "kW",
+              "values": [
+                42,
+                45,
+                44,
+                49,
+                52,
+                58,
+                63,
+                66,
+                72,
+                75,
+                79,
+                82,
+                86,
+                90
+              ]
+            },
+            {
+              "name": "MAPE",
+              "unit": "%",
+              "values": [
+                78,
+                82,
+                74,
+                88,
+                85,
+                79,
+                94,
+                98,
+                108,
+                102,
+                118,
+                123,
+                137,
+                141
+              ]
+            },
+            {
+              "name": "Skill Score",
+              "unit": "%",
+              "values": [
+                24,
+                21,
+                19,
+                17,
+                13,
+                10,
+                8,
+                4,
+                2,
+                -1,
+                -3,
+                -4,
+                -5,
+                -6
+              ]
+            }
           ]
         },
         {
@@ -228,73 +585,253 @@
           "title": "Actual vs Prediction vs Baseline",
           "subtitle": "plant.chiller_power_kw，單位：kW",
           "type": "line",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-15"
+          ],
           "series": [
-            { "name": "Actual", "values": [470, 490, 445, 520, 585, 640, 700, 760, 850, 790, 750] },
-            { "name": "Prediction", "values": [210, 230, 185, 270, 210, 260, 310, 360, 470, 410, 350] },
-            { "name": "Baseline", "values": [340, 365, 310, 400, 440, 485, 540, 620, 665, 575, 520] }
+            {
+              "name": "Actual",
+              "values": [
+                470,
+                490,
+                445,
+                520,
+                585,
+                640,
+                700,
+                760,
+                850,
+                790,
+                750
+              ]
+            },
+            {
+              "name": "Prediction",
+              "values": [
+                210,
+                230,
+                185,
+                270,
+                210,
+                260,
+                310,
+                360,
+                470,
+                410,
+                350
+              ]
+            },
+            {
+              "name": "Baseline",
+              "values": [
+                340,
+                365,
+                310,
+                400,
+                440,
+                485,
+                540,
+                620,
+                665,
+                575,
+                520
+              ]
+            }
           ]
         }
       ],
-      "featureDrift": [
-        { "featureName": "chiller_power_kw", "psi": 0.486, "ksPValue": 0.004, "importance": 0.338, "status": "Critical" },
-        { "featureName": "chilled_water_flow", "psi": 0.302, "ksPValue": 0.019, "importance": 0.158, "status": "Critical" },
-        { "featureName": "supply_air_temp", "psi": 0.245, "ksPValue": 0.041, "importance": 0.224, "status": "Warning" },
-        { "featureName": "outdoor_temp", "psi": 0.092, "ksPValue": 0.188, "importance": 0.182, "status": "Normal" },
-        { "featureName": "occupancy_rate", "psi": 0.118, "ksPValue": 0.262, "importance": 0.126, "status": "Warning" }
+      "feature_drift": [
+        {
+          "feature_name": "chiller_power_kw",
+          "psi": 0.486,
+          "ks_p_value": 0.004,
+          "importance": 0.338,
+          "status": "Critical"
+        },
+        {
+          "feature_name": "chilled_water_flow",
+          "psi": 0.302,
+          "ks_p_value": 0.019,
+          "importance": 0.158,
+          "status": "Critical"
+        },
+        {
+          "feature_name": "supply_air_temp",
+          "psi": 0.245,
+          "ks_p_value": 0.041,
+          "importance": 0.224,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "outdoor_temp",
+          "psi": 0.092,
+          "ks_p_value": 0.188,
+          "importance": 0.182,
+          "status": "Normal"
+        },
+        {
+          "feature_name": "occupancy_rate",
+          "psi": 0.118,
+          "ks_p_value": 0.262,
+          "importance": 0.126,
+          "status": "Warning"
+        }
       ],
-      "evaluationDataQuality": {
-        "predictionCount": 18420,
-        "actualCount": 18001,
-        "joinedRows": 16972,
-        "excludedActualRows": 1029
+      "evaluation_data_quality": {
+        "prediction_count": 18420,
+        "actual_count": 18001,
+        "joined_rows": 16972,
+        "excluded_actual_rows": 1029
       }
     },
     {
       "id": "predict.energy_load_03",
       "kind": "forecast",
-      "modelKind": "forecast / XGBoost Regressor",
-      "siteId": "site_khh_energy_03",
-      "siteName": "高雄能源中心",
-      "targetPoint": "meter.energy_load",
-      "modelVersion": "v3.0.2",
-      "healthStatus": "Warning",
-      "driftStatus": "Warning",
-      "lastEvaluated": "07-15 14:10",
-      "evaluatedAt": "2024-07-15 14:10:00",
-      "evaluationPeriod": "2024-07-01 ~ 2024-07-15",
+      "model_kind": "forecast / XGBoost Regressor",
+      "site_id": "site_khh_energy_03",
+      "site_name": "高雄能源中心",
+      "target_point": "meter.energy_load",
+      "model_version": "v3.0.2",
+      "health_status": "Warning",
+      "drift_status": "Warning",
+      "last_evaluated": "07-15 14:10",
+      "evaluated_at": "2024-07-15 14:10:00",
+      "evaluation_period": "2024-07-01 ~ 2024-07-15",
       "overview": {
         "mape": "15.8%",
-        "skillScore": "+12.3%",
+        "skill_score": "+12.3%",
         "drift": "Normal"
       },
-      "serviceInfo": {
+      "service_info": {
         "online": "Online",
-        "lastSuccessfulRunAt": "2024-07-15 14:10:00",
-        "successRate": "99.1%",
-        "errorRate": "0.9%",
-        "p95Latency": "180 ms",
-        "deployedAt": "2024-07-08 10:30:00"
+        "last_successful_run_at": "2024-07-15 14:10:00",
+        "success_rate": "99.1%",
+        "error_rate": "0.9%",
+        "p95_latency": "180 ms",
+        "deployed_at": "2024-07-08 10:30:00"
       },
-      "metricCards": [
-        { "label": "MAE", "value": "18.6 kW", "tone": "ok" },
-        { "label": "MAPE", "value": "15.8%", "tone": "ok" },
-        { "label": "Baseline MAPE", "value": "20.1%", "tone": "ok" },
-        { "label": "Skill Score", "value": "+21.4%", "tone": "ok", "formula": "1 - 15.8 / 20.1" },
-        { "label": "評測覆蓋率", "value": "97.1%", "tone": "ok" }
+      "metric_cards": [
+        {
+          "label": "MAE",
+          "value": "18.6 kW",
+          "tone": "ok"
+        },
+        {
+          "label": "MAPE",
+          "value": "15.8%",
+          "tone": "ok"
+        },
+        {
+          "label": "Baseline MAPE",
+          "value": "20.1%",
+          "tone": "ok"
+        },
+        {
+          "label": "Skill Score",
+          "value": "+21.4%",
+          "tone": "ok",
+          "formula": "1 - 15.8 / 20.1"
+        },
+        {
+          "label": "評測覆蓋率",
+          "value": "97.1%",
+          "tone": "ok"
+        }
       ],
       "charts": [
         {
           "id": "forecast_metrics_trend",
           "title": "MAE / MAPE / Skill Score 趨勢",
           "subtitle": "評測期間：2024-07-01 ~ 2024-07-15，單位：kW",
-          "defaultMetric": "MAPE",
+          "default_metric": "MAPE",
           "type": "bar",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "MAE", "unit": "kW", "values": [18, 17, 19, 16, 15, 17, 16, 15, 14, 15, 13, 14, 12, 13] },
-            { "name": "MAPE", "unit": "%", "values": [68, 70, 66, 69, 71, 70, 67, 65, 66, 64, 63, 62, 61, 60] },
-            { "name": "Skill Score", "unit": "%", "values": [12, 14, 15, 16, 17, 18, 19, 18, 20, 21, 20, 22, 21, 23] }
+            {
+              "name": "MAE",
+              "unit": "kW",
+              "values": [
+                18,
+                17,
+                19,
+                16,
+                15,
+                17,
+                16,
+                15,
+                14,
+                15,
+                13,
+                14,
+                12,
+                13
+              ]
+            },
+            {
+              "name": "MAPE",
+              "unit": "%",
+              "values": [
+                68,
+                70,
+                66,
+                69,
+                71,
+                70,
+                67,
+                65,
+                66,
+                64,
+                63,
+                62,
+                61,
+                60
+              ]
+            },
+            {
+              "name": "Skill Score",
+              "unit": "%",
+              "values": [
+                12,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                18,
+                20,
+                21,
+                20,
+                22,
+                21,
+                23
+              ]
+            }
           ]
         },
         {
@@ -302,66 +839,181 @@
           "title": "Actual vs Prediction vs Baseline",
           "subtitle": "meter.energy_load，單位：kW",
           "type": "line",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-15"
+          ],
           "series": [
-            { "name": "Actual", "values": [410, 425, 415, 440, 458, 470, 486, 510, 535, 522, 548] },
-            { "name": "Prediction", "values": [398, 430, 405, 448, 452, 465, 492, 500, 528, 530, 541] },
-            { "name": "Baseline", "values": [360, 380, 372, 400, 420, 432, 450, 468, 486, 478, 492] }
+            {
+              "name": "Actual",
+              "values": [
+                410,
+                425,
+                415,
+                440,
+                458,
+                470,
+                486,
+                510,
+                535,
+                522,
+                548
+              ]
+            },
+            {
+              "name": "Prediction",
+              "values": [
+                398,
+                430,
+                405,
+                448,
+                452,
+                465,
+                492,
+                500,
+                528,
+                530,
+                541
+              ]
+            },
+            {
+              "name": "Baseline",
+              "values": [
+                360,
+                380,
+                372,
+                400,
+                420,
+                432,
+                450,
+                468,
+                486,
+                478,
+                492
+              ]
+            }
           ]
         }
       ],
-      "featureDrift": [
-        { "featureName": "flow_rate", "psi": 0.132, "ksPValue": 0.078, "importance": 0.174, "status": "Warning" },
-        { "featureName": "supply_temp", "psi": 0.104, "ksPValue": 0.182, "importance": 0.268, "status": "Warning" },
-        { "featureName": "return_temp", "psi": 0.086, "ksPValue": 0.210, "importance": 0.193, "status": "Normal" },
-        { "featureName": "outdoor_temp", "psi": 0.074, "ksPValue": 0.244, "importance": 0.151, "status": "Normal" }
+      "feature_drift": [
+        {
+          "feature_name": "flow_rate",
+          "psi": 0.132,
+          "ks_p_value": 0.078,
+          "importance": 0.174,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "supply_temp",
+          "psi": 0.104,
+          "ks_p_value": 0.182,
+          "importance": 0.268,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "return_temp",
+          "psi": 0.086,
+          "ks_p_value": 0.21,
+          "importance": 0.193,
+          "status": "Normal"
+        },
+        {
+          "feature_name": "outdoor_temp",
+          "psi": 0.074,
+          "ks_p_value": 0.244,
+          "importance": 0.151,
+          "status": "Normal"
+        }
       ],
-      "evaluationDataQuality": {
-        "predictionCount": 12880,
-        "actualCount": 12764,
-        "joinedRows": 12502,
-        "excludedActualRows": 262
+      "evaluation_data_quality": {
+        "prediction_count": 12880,
+        "actual_count": 12764,
+        "joined_rows": 12502,
+        "excluded_actual_rows": 262
       }
     },
     {
       "id": "anomaly.chw_temp_01",
       "kind": "anomaly",
-      "modelKind": "anomaly / Isolation Forest",
-      "siteId": "site_tpe_chw_01",
-      "siteName": "台北冰水主機房",
-      "targetPoint": "plant.chw_temp_delta",
-      "modelVersion": "v1.9.0",
-      "healthStatus": "Warning",
-      "lastEvaluated": "07-15 14:25",
-      "evaluatedAt": "2024-07-15 14:25:00",
-      "evaluationPeriod": "2024-07-01 ~ 2024-07-15",
+      "model_kind": "anomaly / Isolation Forest",
+      "site_id": "site_tpe_chw_01",
+      "site_name": "台北冰水主機房",
+      "target_point": "plant.chw_temp_delta",
+      "model_version": "v1.9.0",
+      "health_status": "Warning",
+      "last_evaluated": "07-15 14:25",
+      "evaluated_at": "2024-07-15 14:25:00",
+      "evaluation_period": "2024-07-01 ~ 2024-07-15",
       "overview": {
         "events": "48 events",
-        "anomalyRate": "3.2%",
-        "scoreP99": "0.78"
+        "anomaly_rate": "3.2%",
+        "score_p99": "0.78"
       },
-      "serviceInfo": {
+      "service_info": {
         "online": "Online",
-        "lastSuccessfulRunAt": "2024-07-15 14:25:00",
-        "successRate": "96.4%",
-        "errorRate": "3.6%",
-        "p95Latency": "430 ms",
-        "deployedAt": "2024-07-08 10:30:00"
+        "last_successful_run_at": "2024-07-15 14:25:00",
+        "success_rate": "96.4%",
+        "error_rate": "3.6%",
+        "p95_latency": "430 ms",
+        "deployed_at": "2024-07-08 10:30:00"
       },
-      "metricCards": [
-        { "label": "異常事件數", "value": "48", "tone": "warn" },
-        { "label": "異常率", "value": "3.2%", "tone": "warn", "formula": "48 / 1500" },
-        { "label": "Score P99", "value": "0.78", "tone": "warn" },
-        { "label": "Threshold", "value": "0.70", "tone": "ok" },
-        { "label": "評測覆蓋率", "value": "97.8%", "tone": "ok", "formula": "1500 / 1534" }
+      "metric_cards": [
+        {
+          "label": "異常事件數",
+          "value": "48",
+          "tone": "warn"
+        },
+        {
+          "label": "異常率",
+          "value": "3.2%",
+          "tone": "warn",
+          "formula": "48 / 1500"
+        },
+        {
+          "label": "Score P99",
+          "value": "0.78",
+          "tone": "warn"
+        },
+        {
+          "label": "Threshold",
+          "value": "0.70",
+          "tone": "ok"
+        },
+        {
+          "label": "評測覆蓋率",
+          "value": "97.8%",
+          "tone": "ok",
+          "formula": "1500 / 1534"
+        }
       ],
-      "secondaryMetrics": {
+      "secondary_metrics": {
         "title": "標註資料評測",
-        "labeledRows": 1460,
+        "labeled_rows": 1460,
         "metrics": [
-          { "label": "Precision", "value": "92.4%", "tone": "ok" },
-          { "label": "Recall", "value": "88.1%", "tone": "ok" },
-          { "label": "F1-score", "value": "90.2%", "tone": "ok" }
+          {
+            "label": "Precision",
+            "value": "92.4%",
+            "tone": "ok"
+          },
+          {
+            "label": "Recall",
+            "value": "88.1%",
+            "tone": "ok"
+          },
+          {
+            "label": "F1-score",
+            "value": "90.2%",
+            "tone": "ok"
+          }
         ]
       },
       "charts": [
@@ -369,13 +1021,83 @@
           "id": "anomaly_metrics_trend",
           "title": "異常指標趨勢",
           "subtitle": "評測期間：2024-07-01 ~ 2024-07-15",
-          "defaultMetric": "異常數量",
+          "default_metric": "異常數量",
           "type": "bar",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "異常數量", "values": [14, 18, 17, 21, 24, 26, 28, 31, 35, 38, 41, 44, 46, 48] },
-            { "name": "異常率", "unit": "%", "values": [0.9, 1.2, 1.1, 1.4, 1.6, 1.7, 1.9, 2.1, 2.3, 2.5, 2.7, 2.9, 3.1, 3.2] },
-            { "name": "異常分數", "values": [0.48, 0.51, 0.50, 0.55, 0.58, 0.60, 0.63, 0.66, 0.69, 0.72, 0.75, 0.76, 0.77, 0.78] }
+            {
+              "name": "異常數量",
+              "values": [
+                14,
+                18,
+                17,
+                21,
+                24,
+                26,
+                28,
+                31,
+                35,
+                38,
+                41,
+                44,
+                46,
+                48
+              ]
+            },
+            {
+              "name": "異常率",
+              "unit": "%",
+              "values": [
+                0.9,
+                1.2,
+                1.1,
+                1.4,
+                1.6,
+                1.7,
+                1.9,
+                2.1,
+                2.3,
+                2.5,
+                2.7,
+                2.9,
+                3.1,
+                3.2
+              ]
+            },
+            {
+              "name": "異常分數",
+              "values": [
+                0.48,
+                0.51,
+                0.5,
+                0.55,
+                0.58,
+                0.6,
+                0.63,
+                0.66,
+                0.69,
+                0.72,
+                0.75,
+                0.76,
+                0.77,
+                0.78
+              ]
+            }
           ]
         },
         {
@@ -383,72 +1105,257 @@
           "title": "異常分數趨勢",
           "subtitle": "分數 0-1",
           "type": "line",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "P95 Score", "values": [0.34, 0.37, 0.36, 0.40, 0.43, 0.45, 0.48, 0.51, 0.54, 0.58, 0.61, 0.63, 0.65, 0.66] },
-            { "name": "P99 Score", "values": [0.48, 0.51, 0.50, 0.55, 0.58, 0.60, 0.63, 0.66, 0.69, 0.72, 0.75, 0.76, 0.77, 0.78] },
-            { "name": "Threshold", "values": [0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70] }
+            {
+              "name": "P95 Score",
+              "values": [
+                0.34,
+                0.37,
+                0.36,
+                0.4,
+                0.43,
+                0.45,
+                0.48,
+                0.51,
+                0.54,
+                0.58,
+                0.61,
+                0.63,
+                0.65,
+                0.66
+              ]
+            },
+            {
+              "name": "P99 Score",
+              "values": [
+                0.48,
+                0.51,
+                0.5,
+                0.55,
+                0.58,
+                0.6,
+                0.63,
+                0.66,
+                0.69,
+                0.72,
+                0.75,
+                0.76,
+                0.77,
+                0.78
+              ]
+            },
+            {
+              "name": "Threshold",
+              "values": [
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7
+              ]
+            }
           ]
         }
       ],
-      "featureDrift": [
-        { "featureName": "flow_rate", "psi": 0.132, "ksPValue": 0.078, "importance": 0.174, "status": "Warning" },
-        { "featureName": "supply_temp", "psi": 0.104, "ksPValue": 0.182, "importance": 0.268, "status": "Warning" },
-        { "featureName": "return_temp", "psi": 0.086, "ksPValue": 0.210, "importance": 0.193, "status": "Normal" },
-        { "featureName": "outdoor_temp", "psi": 0.074, "ksPValue": 0.244, "importance": 0.151, "status": "Normal" }
+      "feature_drift": [
+        {
+          "feature_name": "flow_rate",
+          "psi": 0.132,
+          "ks_p_value": 0.078,
+          "importance": 0.174,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "supply_temp",
+          "psi": 0.104,
+          "ks_p_value": 0.182,
+          "importance": 0.268,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "return_temp",
+          "psi": 0.086,
+          "ks_p_value": 0.21,
+          "importance": 0.193,
+          "status": "Normal"
+        },
+        {
+          "feature_name": "outdoor_temp",
+          "psi": 0.074,
+          "ks_p_value": 0.244,
+          "importance": 0.151,
+          "status": "Normal"
+        }
       ],
-      "scoringStats": {
-        "scoredRows": 1534,
-        "validRows": 1500,
-        "excludedRows": 34,
-        "labeledRows": 1460
+      "scoring_stats": {
+        "scored_rows": 1534,
+        "valid_rows": 1500,
+        "excluded_rows": 34,
+        "labeled_rows": 1460
       }
     },
     {
       "id": "anomaly.ct_water_temp_01",
       "kind": "anomaly",
-      "modelKind": "anomaly / AutoEncoder",
-      "siteId": "site_khh_energy_03",
-      "siteName": "高雄能源中心",
-      "targetPoint": "tower.ct_03.temp",
-      "modelVersion": "v2.1.6",
-      "healthStatus": "Critical",
-      "lastEvaluated": "07-15 14:12",
-      "evaluatedAt": "2024-07-15 14:12:00",
-      "evaluationPeriod": "2024-07-01 ~ 2024-07-15",
+      "model_kind": "anomaly / AutoEncoder",
+      "site_id": "site_khh_energy_03",
+      "site_name": "高雄能源中心",
+      "target_point": "tower.ct_03.temp",
+      "model_version": "v2.1.6",
+      "health_status": "Critical",
+      "last_evaluated": "07-15 14:12",
+      "evaluated_at": "2024-07-15 14:12:00",
+      "evaluation_period": "2024-07-01 ~ 2024-07-15",
       "overview": {
         "events": "126 events",
-        "anomalyRate": "7.8%",
-        "scoreP99": "0.94"
+        "anomaly_rate": "7.8%",
+        "score_p99": "0.94"
       },
-      "serviceInfo": {
+      "service_info": {
         "online": "Offline",
-        "lastSuccessfulRunAt": "2024-07-15 13:42:10",
-        "successRate": "91.2%",
-        "errorRate": "8.8%",
-        "p95Latency": "840 ms",
-        "deployedAt": "2024-07-08 10:30:00"
+        "last_successful_run_at": "2024-07-15 13:42:10",
+        "success_rate": "91.2%",
+        "error_rate": "8.8%",
+        "p95_latency": "840 ms",
+        "deployed_at": "2024-07-08 10:30:00"
       },
-      "metricCards": [
-        { "label": "異常事件數", "value": "126", "tone": "bad" },
-        { "label": "異常率", "value": "7.8%", "tone": "bad", "formula": "126 / 1615" },
-        { "label": "Score P99", "value": "0.94", "tone": "bad" },
-        { "label": "Threshold", "value": "0.70", "tone": "ok" },
-        { "label": "評測覆蓋率", "value": "97.2%", "tone": "warn", "formula": "1615 / 1662" }
+      "metric_cards": [
+        {
+          "label": "異常事件數",
+          "value": "126",
+          "tone": "bad"
+        },
+        {
+          "label": "異常率",
+          "value": "7.8%",
+          "tone": "bad",
+          "formula": "126 / 1615"
+        },
+        {
+          "label": "Score P99",
+          "value": "0.94",
+          "tone": "bad"
+        },
+        {
+          "label": "Threshold",
+          "value": "0.70",
+          "tone": "ok"
+        },
+        {
+          "label": "評測覆蓋率",
+          "value": "97.2%",
+          "tone": "warn",
+          "formula": "1615 / 1662"
+        }
       ],
-      "secondaryMetrics": null,
+      "secondary_metrics": null,
       "charts": [
         {
           "id": "anomaly_metrics_trend",
           "title": "異常指標趨勢",
           "subtitle": "評測期間：2024-07-01 ~ 2024-07-15",
-          "defaultMetric": "異常數量",
+          "default_metric": "異常數量",
           "type": "bar",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "異常數量", "values": [36, 42, 45, 51, 58, 67, 72, 80, 91, 98, 108, 116, 122, 126] },
-            { "name": "異常率", "unit": "%", "values": [2.2, 2.6, 2.8, 3.2, 3.6, 4.1, 4.5, 5.0, 5.6, 6.1, 6.7, 7.2, 7.6, 7.8] },
-            { "name": "異常分數", "values": [0.58, 0.61, 0.64, 0.67, 0.71, 0.75, 0.78, 0.82, 0.86, 0.89, 0.91, 0.92, 0.93, 0.94] }
+            {
+              "name": "異常數量",
+              "values": [
+                36,
+                42,
+                45,
+                51,
+                58,
+                67,
+                72,
+                80,
+                91,
+                98,
+                108,
+                116,
+                122,
+                126
+              ]
+            },
+            {
+              "name": "異常率",
+              "unit": "%",
+              "values": [
+                2.2,
+                2.6,
+                2.8,
+                3.2,
+                3.6,
+                4.1,
+                4.5,
+                5,
+                5.6,
+                6.1,
+                6.7,
+                7.2,
+                7.6,
+                7.8
+              ]
+            },
+            {
+              "name": "異常分數",
+              "values": [
+                0.58,
+                0.61,
+                0.64,
+                0.67,
+                0.71,
+                0.75,
+                0.78,
+                0.82,
+                0.86,
+                0.89,
+                0.91,
+                0.92,
+                0.93,
+                0.94
+              ]
+            }
           ]
         },
         {
@@ -456,68 +1363,254 @@
           "title": "異常分數趨勢",
           "subtitle": "分數 0-1",
           "type": "line",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "P95 Score", "values": [0.42, 0.46, 0.49, 0.52, 0.57, 0.62, 0.66, 0.70, 0.75, 0.79, 0.82, 0.84, 0.85, 0.86] },
-            { "name": "P99 Score", "values": [0.58, 0.61, 0.64, 0.67, 0.71, 0.75, 0.78, 0.82, 0.86, 0.89, 0.91, 0.92, 0.93, 0.94] },
-            { "name": "Threshold", "values": [0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70, 0.70] }
+            {
+              "name": "P95 Score",
+              "values": [
+                0.42,
+                0.46,
+                0.49,
+                0.52,
+                0.57,
+                0.62,
+                0.66,
+                0.7,
+                0.75,
+                0.79,
+                0.82,
+                0.84,
+                0.85,
+                0.86
+              ]
+            },
+            {
+              "name": "P99 Score",
+              "values": [
+                0.58,
+                0.61,
+                0.64,
+                0.67,
+                0.71,
+                0.75,
+                0.78,
+                0.82,
+                0.86,
+                0.89,
+                0.91,
+                0.92,
+                0.93,
+                0.94
+              ]
+            },
+            {
+              "name": "Threshold",
+              "values": [
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7,
+                0.7
+              ]
+            }
           ]
         }
       ],
-      "featureDrift": [
-        { "featureName": "flow_rate", "psi": 0.132, "ksPValue": 0.078, "importance": 0.174, "status": "Warning" },
-        { "featureName": "supply_temp", "psi": 0.104, "ksPValue": 0.182, "importance": 0.268, "status": "Warning" },
-        { "featureName": "return_temp", "psi": 0.086, "ksPValue": 0.210, "importance": 0.193, "status": "Normal" },
-        { "featureName": "outdoor_temp", "psi": 0.074, "ksPValue": 0.244, "importance": 0.151, "status": "Normal" }
+      "feature_drift": [
+        {
+          "feature_name": "flow_rate",
+          "psi": 0.132,
+          "ks_p_value": 0.078,
+          "importance": 0.174,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "supply_temp",
+          "psi": 0.104,
+          "ks_p_value": 0.182,
+          "importance": 0.268,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "return_temp",
+          "psi": 0.086,
+          "ks_p_value": 0.21,
+          "importance": 0.193,
+          "status": "Normal"
+        },
+        {
+          "feature_name": "outdoor_temp",
+          "psi": 0.074,
+          "ks_p_value": 0.244,
+          "importance": 0.151,
+          "status": "Normal"
+        }
       ],
-      "scoringStats": {
-        "scoredRows": 1662,
-        "validRows": 1615,
-        "excludedRows": 47,
-        "labeledRows": 0
+      "scoring_stats": {
+        "scored_rows": 1662,
+        "valid_rows": 1615,
+        "excluded_rows": 47,
+        "labeled_rows": 0
       }
     },
     {
       "id": "recommender.setpoint_01",
       "kind": "recommender",
-      "modelKind": "recommender / Policy Ranker",
-      "siteId": "site_tpe_chw_01",
-      "siteName": "台北冰水主機房",
-      "targetScope": "plant.chw_setpoint",
-      "targetScopePoints": ["plant.chw_setpoint"],
-      "modelVersion": "v1.4.7",
-      "healthStatus": "Warning",
-      "lastEvaluated": "07-15 14:20",
-      "statisticsUpdatedAt": "2024-07-15 14:20:00",
-      "statisticsPeriod": "2024-07-01 ~ 2024-07-15",
+      "model_kind": "recommender / Policy Ranker",
+      "site_id": "site_tpe_chw_01",
+      "site_name": "台北冰水主機房",
+      "target_scope": "plant.chw_setpoint",
+      "target_scope_points": [
+        "plant.chw_setpoint"
+      ],
+      "model_version": "v1.4.7",
+      "health_status": "Warning",
+      "last_evaluated": "07-15 14:20",
+      "statistics_updated_at": "2024-07-15 14:20:00",
+      "statistics_period": "2024-07-01 ~ 2024-07-15",
       "overview": {
-        "successRate": "99.2%",
-        "p95Latency": "190",
-        "guardrailRate": "3.1%"
+        "success_rate": "99.2%",
+        "p95_latency": "190",
+        "guardrail_rate": "3.1%"
       },
-      "serviceInfo": {
+      "service_info": {
         "online": "Online",
-        "lastSuccessfulRunAt": "2024-07-15 14:20:00",
-        "deployedAt": "2024-07-10 09:20:00"
+        "last_successful_run_at": "2024-07-15 14:20:00",
+        "deployed_at": "2024-07-10 09:20:00"
       },
-      "metricCards": [
-        { "label": "執行成功率", "value": "99.2%", "tone": "ok", "formula": "2397 / 2416" },
-        { "label": "採用率", "value": "66.6%", "tone": "ok", "formula": "1608 / 2416" },
-        { "label": "Guardrail 攔截率", "value": "3.1%", "tone": "warn", "formula": "75 / 2416" },
-        { "label": "P95 Latency", "value": "190", "tone": "ok" }
+      "metric_cards": [
+        {
+          "label": "執行成功率",
+          "value": "99.2%",
+          "tone": "ok",
+          "formula": "2397 / 2416"
+        },
+        {
+          "label": "採用率",
+          "value": "66.6%",
+          "tone": "ok",
+          "formula": "1608 / 2416"
+        },
+        {
+          "label": "Guardrail 攔截率",
+          "value": "3.1%",
+          "tone": "warn",
+          "formula": "75 / 2416"
+        },
+        {
+          "label": "P95 Latency",
+          "value": "190",
+          "tone": "ok"
+        }
       ],
       "charts": [
         {
           "id": "recommender_metrics_trend",
           "title": "推薦指標趨勢",
           "subtitle": "統計期間：2024-07-01 ~ 2024-07-15",
-          "defaultMetric": "成功率",
+          "default_metric": "成功率",
           "type": "bar",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "成功率", "unit": "%", "values": [97.4, 97.8, 98.1, 98.4, 98.6, 98.8, 99.0, 99.1, 99.1, 99.2, 99.2, 99.2, 99.2, 99.2] },
-            { "name": "採用率", "unit": "%", "values": [59.2, 60.1, 60.8, 61.4, 62.1, 62.8, 63.5, 64.1, 64.7, 65.1, 65.5, 65.9, 66.3, 66.6] },
-            { "name": "Guardrail 攔截率", "unit": "%", "values": [4.8, 4.5, 4.3, 4.0, 3.8, 3.7, 3.5, 3.4, 3.3, 3.2, 3.2, 3.1, 3.1, 3.1] }
+            {
+              "name": "成功率",
+              "unit": "%",
+              "values": [
+                97.4,
+                97.8,
+                98.1,
+                98.4,
+                98.6,
+                98.8,
+                99,
+                99.1,
+                99.1,
+                99.2,
+                99.2,
+                99.2,
+                99.2,
+                99.2
+              ]
+            },
+            {
+              "name": "採用率",
+              "unit": "%",
+              "values": [
+                59.2,
+                60.1,
+                60.8,
+                61.4,
+                62.1,
+                62.8,
+                63.5,
+                64.1,
+                64.7,
+                65.1,
+                65.5,
+                65.9,
+                66.3,
+                66.6
+              ]
+            },
+            {
+              "name": "Guardrail 攔截率",
+              "unit": "%",
+              "values": [
+                4.8,
+                4.5,
+                4.3,
+                4,
+                3.8,
+                3.7,
+                3.5,
+                3.4,
+                3.3,
+                3.2,
+                3.2,
+                3.1,
+                3.1,
+                3.1
+              ]
+            }
           ]
         },
         {
@@ -525,67 +1618,219 @@
           "title": "P95 Latency 趨勢",
           "subtitle": "P95 Latency",
           "type": "line",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "P95 Latency", "values": [168, 172, 176, 181, 178, 184, 187, 190, 194, 196, 193, 191, 190, 190] }
+            {
+              "name": "P95 Latency",
+              "values": [
+                168,
+                172,
+                176,
+                181,
+                178,
+                184,
+                187,
+                190,
+                194,
+                196,
+                193,
+                191,
+                190,
+                190
+              ]
+            }
           ]
         }
       ],
-      "featureDrift": [
-        { "featureName": "flow_rate", "psi": 0.132, "ksPValue": 0.078, "importance": 0.174, "status": "Warning" },
-        { "featureName": "supply_temp", "psi": 0.104, "ksPValue": 0.182, "importance": 0.268, "status": "Warning" },
-        { "featureName": "return_temp", "psi": 0.086, "ksPValue": 0.210, "importance": 0.193, "status": "Normal" },
-        { "featureName": "outdoor_temp", "psi": 0.074, "ksPValue": 0.244, "importance": 0.151, "status": "Normal" }
+      "feature_drift": [
+        {
+          "feature_name": "flow_rate",
+          "psi": 0.132,
+          "ks_p_value": 0.078,
+          "importance": 0.174,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "supply_temp",
+          "psi": 0.104,
+          "ks_p_value": 0.182,
+          "importance": 0.268,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "return_temp",
+          "psi": 0.086,
+          "ks_p_value": 0.21,
+          "importance": 0.193,
+          "status": "Normal"
+        },
+        {
+          "feature_name": "outdoor_temp",
+          "psi": 0.074,
+          "ks_p_value": 0.244,
+          "importance": 0.151,
+          "status": "Normal"
+        }
       ],
-      "executionStats": {
-        "totalRuns": 2416,
-        "successfulRuns": 2397,
-        "failedRuns": 19,
-        "guardrailBlockedRuns": 75,
-        "adoptedRuns": 1608
+      "execution_stats": {
+        "total_runs": 2416,
+        "successful_runs": 2397,
+        "failed_runs": 19,
+        "guardrail_blocked_runs": 75,
+        "adopted_runs": 1608
       }
     },
     {
       "id": "recommender.cooling_plan_02",
       "kind": "recommender",
-      "modelKind": "recommender / Policy Ranker",
-      "siteId": "site_txg_hvac_02",
-      "siteName": "台中空調機房",
-      "targetScope": "3 output points",
-      "targetScopePoints": ["plant.cooling_schedule", "plant.chw_supply_setpoint", "plant.chiller_sequence"],
-      "modelVersion": "v1.5.3",
-      "healthStatus": "Warning",
-      "lastEvaluated": "07-15 14:05",
-      "statisticsUpdatedAt": "2024-07-15 14:05:00",
-      "statisticsPeriod": "2024-07-01 ~ 2024-07-15",
+      "model_kind": "recommender / Policy Ranker",
+      "site_id": "site_txg_hvac_02",
+      "site_name": "台中空調機房",
+      "target_scope": "3 output points",
+      "target_scope_points": [
+        "plant.cooling_schedule",
+        "plant.chw_supply_setpoint",
+        "plant.chiller_sequence"
+      ],
+      "model_version": "v1.5.3",
+      "health_status": "Warning",
+      "last_evaluated": "07-15 14:05",
+      "statistics_updated_at": "2024-07-15 14:05:00",
+      "statistics_period": "2024-07-01 ~ 2024-07-15",
       "overview": {
-        "successRate": "97.8%",
-        "p95Latency": "240",
-        "guardrailRate": "4.6%"
+        "success_rate": "97.8%",
+        "p95_latency": "240",
+        "guardrail_rate": "4.6%"
       },
-      "serviceInfo": {
+      "service_info": {
         "online": "Online",
-        "lastSuccessfulRunAt": "2024-07-15 14:05:00",
-        "deployedAt": "2024-07-10 09:20:00"
+        "last_successful_run_at": "2024-07-15 14:05:00",
+        "deployed_at": "2024-07-10 09:20:00"
       },
-      "metricCards": [
-        { "label": "執行成功率", "value": "97.8%", "tone": "ok", "formula": "1256 / 1284" },
-        { "label": "採用率", "value": "58.6%", "tone": "ok", "formula": "752 / 1284" },
-        { "label": "Guardrail 攔截率", "value": "4.6%", "tone": "warn", "formula": "59 / 1284" },
-        { "label": "P95 Latency", "value": "240", "tone": "ok" }
+      "metric_cards": [
+        {
+          "label": "執行成功率",
+          "value": "97.8%",
+          "tone": "ok",
+          "formula": "1256 / 1284"
+        },
+        {
+          "label": "採用率",
+          "value": "58.6%",
+          "tone": "ok",
+          "formula": "752 / 1284"
+        },
+        {
+          "label": "Guardrail 攔截率",
+          "value": "4.6%",
+          "tone": "warn",
+          "formula": "59 / 1284"
+        },
+        {
+          "label": "P95 Latency",
+          "value": "240",
+          "tone": "ok"
+        }
       ],
       "charts": [
         {
           "id": "recommender_metrics_trend",
           "title": "推薦指標趨勢",
           "subtitle": "統計期間：2024-07-01 ~ 2024-07-15",
-          "defaultMetric": "成功率",
+          "default_metric": "成功率",
           "type": "bar",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "成功率", "unit": "%", "values": [92.6, 93.1, 93.8, 94.6, 95.2, 96.0, 96.4, 96.9, 97.2, 97.5, 97.6, 97.7, 97.8, 97.8] },
-            { "name": "採用率", "unit": "%", "values": [50.4, 51.8, 52.9, 54.2, 55.1, 56.4, 57.5, 58.3, 58.9, 59.1, 59.5, 59.8, 60.2, 58.6] },
-            { "name": "Guardrail 攔截率", "unit": "%", "values": [6.4, 6.0, 5.8, 5.4, 5.2, 5.1, 4.9, 4.8, 4.7, 4.7, 4.6, 4.6, 4.6, 4.6] }
+            {
+              "name": "成功率",
+              "unit": "%",
+              "values": [
+                92.6,
+                93.1,
+                93.8,
+                94.6,
+                95.2,
+                96,
+                96.4,
+                96.9,
+                97.2,
+                97.5,
+                97.6,
+                97.7,
+                97.8,
+                97.8
+              ]
+            },
+            {
+              "name": "採用率",
+              "unit": "%",
+              "values": [
+                50.4,
+                51.8,
+                52.9,
+                54.2,
+                55.1,
+                56.4,
+                57.5,
+                58.3,
+                58.9,
+                59.1,
+                59.5,
+                59.8,
+                60.2,
+                58.6
+              ]
+            },
+            {
+              "name": "Guardrail 攔截率",
+              "unit": "%",
+              "values": [
+                6.4,
+                6,
+                5.8,
+                5.4,
+                5.2,
+                5.1,
+                4.9,
+                4.8,
+                4.7,
+                4.7,
+                4.6,
+                4.6,
+                4.6,
+                4.6
+              ]
+            }
           ]
         },
         {
@@ -593,24 +1838,81 @@
           "title": "P95 Latency 趨勢",
           "subtitle": "P95 Latency",
           "type": "line",
-          "xAxis": ["07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-15"],
+          "x_axis": [
+            "07-01",
+            "07-02",
+            "07-03",
+            "07-04",
+            "07-05",
+            "07-06",
+            "07-07",
+            "07-08",
+            "07-09",
+            "07-10",
+            "07-11",
+            "07-12",
+            "07-13",
+            "07-15"
+          ],
           "series": [
-            { "name": "P95 Latency", "values": [205, 212, 218, 225, 220, 232, 236, 241, 246, 250, 244, 242, 241, 240] }
+            {
+              "name": "P95 Latency",
+              "values": [
+                205,
+                212,
+                218,
+                225,
+                220,
+                232,
+                236,
+                241,
+                246,
+                250,
+                244,
+                242,
+                241,
+                240
+              ]
+            }
           ]
         }
       ],
-      "featureDrift": [
-        { "featureName": "flow_rate", "psi": 0.132, "ksPValue": 0.078, "importance": 0.174, "status": "Warning" },
-        { "featureName": "supply_temp", "psi": 0.104, "ksPValue": 0.182, "importance": 0.268, "status": "Warning" },
-        { "featureName": "return_temp", "psi": 0.086, "ksPValue": 0.210, "importance": 0.193, "status": "Normal" },
-        { "featureName": "outdoor_temp", "psi": 0.074, "ksPValue": 0.244, "importance": 0.151, "status": "Normal" }
+      "feature_drift": [
+        {
+          "feature_name": "flow_rate",
+          "psi": 0.132,
+          "ks_p_value": 0.078,
+          "importance": 0.174,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "supply_temp",
+          "psi": 0.104,
+          "ks_p_value": 0.182,
+          "importance": 0.268,
+          "status": "Warning"
+        },
+        {
+          "feature_name": "return_temp",
+          "psi": 0.086,
+          "ks_p_value": 0.21,
+          "importance": 0.193,
+          "status": "Normal"
+        },
+        {
+          "feature_name": "outdoor_temp",
+          "psi": 0.074,
+          "ks_p_value": 0.244,
+          "importance": 0.151,
+          "status": "Normal"
+        }
       ],
-      "executionStats": {
-        "totalRuns": 1284,
-        "successfulRuns": 1256,
-        "failedRuns": 28,
-        "guardrailBlockedRuns": 59,
-        "adoptedRuns": 752
+      "execution_stats": {
+        "total_runs": 1284,
+        "successful_runs": 1256,
+        "failed_runs": 28,
+        "guardrail_blocked_runs": 59,
+        "adopted_runs": 752
       }
     }
   ]
