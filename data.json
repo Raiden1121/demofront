@@ -10,10 +10,10 @@
     }
   },
   "rules": {
-    "health_status": {
-      "forecast": "Health Status includes model performance and input feature drift. The worst state is shown.",
-      "anomaly": "P99 > Threshold is Warning. P99 >= 0.90 or seven consecutive P99 breaches is Critical.",
-      "recommender": "Health Status includes input feature drift. If service metrics are normal but any feature is Warning, overall status remains Warning."
+    "status": {
+      "forecast": "Model status is provided by the model service. The worst state is shown at Site level.",
+      "anomaly": "Model status is provided by the model service.",
+      "recommender": "Model status is provided by the model service. Recommender remains available in the API contract."
     },
     "drift": {
       "psi": [
@@ -143,22 +143,27 @@
     ],
     "columns_by_kind": {
       "forecast": [
-        "WAPE",
-        "R²",
+        "Model ID",
+        "Target Point",
         "RMSE",
-        "PSI"
+        "R²",
+        "MAE",
+        "MAPE",
+        "Last Evaluated"
       ],
       "anomaly": [
+        "Model ID",
+        "Target Point",
         "F1 Score",
         "Recall",
         "PR-AUC",
-        "PSI"
+        "Precision",
+        "Last Evaluated"
       ],
       "recommender": [
-        "NDCG@K",
-        "Precision@K",
-        "採用率",
-        "PSI"
+        "Model ID",
+        "Target / Scope",
+        "Last Evaluated"
       ]
     },
     "critical_models": [
@@ -189,7 +194,6 @@
       "site_name": "台北冰水主機房",
       "target_point": "plant.chw_supply_temp",
       "model_version": "v2.8.4",
-      "health_status": "Warning",
       "last_evaluated": "07-15 14:30",
       "evaluated_at": "2024-07-15 14:30:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
@@ -529,7 +533,9 @@
           "unit": "",
           "status": "normal"
         }
-      ]
+      ],
+      "status": "yellow",
+      "drift_status": "yellow"
     },
     {
       "id": "predict.chiller_power_01",
@@ -540,7 +546,6 @@
       "site_name": "台中空調機房",
       "target_point": "plant.chiller_power_kw",
       "model_version": "v3.2.1",
-      "health_status": "Critical",
       "last_evaluated": "07-15 14:08",
       "evaluated_at": "2024-07-15 14:08:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
@@ -887,7 +892,9 @@
           "unit": "",
           "status": "critical"
         }
-      ]
+      ],
+      "status": "red",
+      "drift_status": "red"
     },
     {
       "id": "predict.energy_load_03",
@@ -897,7 +904,6 @@
       "site_name": "高雄能源中心",
       "target_point": "meter.energy_load",
       "model_version": "v3.0.2",
-      "health_status": "Warning",
       "last_evaluated": "07-15 14:10",
       "evaluated_at": "2024-07-15 14:10:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
@@ -1237,7 +1243,9 @@
           "unit": "",
           "status": "normal"
         }
-      ]
+      ],
+      "status": "yellow",
+      "drift_status": "green"
     },
     {
       "id": "anomaly.chw_temp_01",
@@ -1247,7 +1255,6 @@
       "site_name": "台北冰水主機房",
       "target_point": "plant.chw_temp_delta",
       "model_version": "v1.9.0",
-      "health_status": "Warning",
       "last_evaluated": "07-15 14:25",
       "evaluated_at": "2024-07-15 14:25:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
@@ -1711,7 +1718,9 @@
           "unit": "",
           "status": "warning"
         }
-      ]
+      ],
+      "status": "yellow",
+      "drift_status": "yellow"
     },
     {
       "id": "anomaly.ct_water_temp_01",
@@ -1721,7 +1730,6 @@
       "site_name": "高雄能源中心",
       "target_point": "tower.ct_03.temp",
       "model_version": "v2.1.6",
-      "health_status": "Critical",
       "last_evaluated": "07-15 14:12",
       "evaluated_at": "2024-07-15 14:12:00",
       "evaluation_period": "2024-07-01 ~ 2024-07-15",
@@ -2185,7 +2193,9 @@
           "unit": "",
           "status": "critical"
         }
-      ]
+      ],
+      "status": "red",
+      "drift_status": "red"
     },
     {
       "id": "recommender.setpoint_01",
@@ -2198,7 +2208,6 @@
         "plant.chw_setpoint"
       ],
       "model_version": "v1.4.7",
-      "health_status": "Warning",
       "last_evaluated": "07-15 14:20",
       "statistics_updated_at": "2024-07-15 14:20:00",
       "statistics_period": "2024-07-01 ~ 2024-07-15",
@@ -2527,7 +2536,9 @@
           "unit": "",
           "status": "normal"
         }
-      ]
+      ],
+      "status": "yellow",
+      "drift_status": "yellow"
     },
     {
       "id": "recommender.cooling_plan_02",
@@ -2542,7 +2553,6 @@
         "plant.chiller_sequence"
       ],
       "model_version": "v1.5.3",
-      "health_status": "Warning",
       "last_evaluated": "07-15 14:05",
       "statistics_updated_at": "2024-07-15 14:05:00",
       "statistics_period": "2024-07-01 ~ 2024-07-15",
@@ -2871,7 +2881,9 @@
           "unit": "",
           "status": "normal"
         }
-      ]
+      ],
+      "status": "yellow",
+      "drift_status": "yellow"
     }
   ]
 }

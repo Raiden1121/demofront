@@ -1397,7 +1397,6 @@
                 <th>Feature Name</th>
                 <th>PSI</th>
                 <th>KS P-value</th>
-                <th>Importance</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -1445,7 +1444,9 @@
       }
       appData = await response.json();
       sites = appData.sites.map(normalizeSite);
-      models = appData.models.map(normalizeModel);
+      models = appData.models
+        .map(normalizeModel)
+        .filter((model) => ["forecast", "anomaly"].includes(model.kind));
       criticalIssues = (appData.overview?.critical_models || []).map((issue) => ({
         id: issue.model_id,
         site: issue.site_name,
@@ -1453,7 +1454,7 @@
         asset: issue.impacted_point,
         duration: issue.duration,
         severity: issue.severity || "Critical"
-      }));
+      })).filter((issue) => models.some((model) => model.id === issue.id));
       siteById = new Map(sites.map((site) => [site.id, site]));
       modelById = new Map(models.map((model) => [model.id, model]));
       state.collapsedSiteIds = new Set(sites.map((site) => site.id));
@@ -1484,13 +1485,13 @@
         targetScope: model.target_scope,
         targetScopePoints: model.target_scope_points,
         type: model.model_kind,
-        status: model.health_status,
-        statusText: model.health_status,
+        status: model.status,
+        statusText: model.status,
         target,
         version: model.model_version,
         mainMetric: overviewMetrics[0]?.displayValue || "--",
         skill: overviewMetrics[1]?.displayValue || "--",
-        drift: psiMetric?.status || "unknown",
+        drift: model.drift_status || psiMetric?.status || "unknown",
         lastEval: model.last_evaluated,
         updated: model.evaluated_at || model.statistics_updated_at || appData?.meta?.page_updated_at || "",
         period: model.evaluation_period || model.statistics_period || appData?.meta?.default_period?.label || "",
@@ -1566,9 +1567,9 @@
 
     const normalizeStatus = (status) => {
       const normalized = String(status || "").toLowerCase();
-      if (normalized === "critical" || status === "嚴重") return "critical";
-      if (normalized === "warning" || status === "警告") return "warning";
-      if (normalized === "normal" || status === "正常") return "normal";
+      if (["red", "critical", "嚴重"].includes(normalized) || status === "嚴重") return "critical";
+      if (["yellow", "warning", "警告"].includes(normalized) || status === "警告") return "warning";
+      if (["green", "normal", "正常"].includes(normalized) || status === "正常") return "normal";
       return "unknown";
     };
 
@@ -1644,8 +1645,18 @@
       };
     }
 
+    const displayKinds = ["forecast", "anomaly"];
+    const overviewMetricKeys = {
+      forecast: ["rmse", "r_squared", "mae", "mape"],
+      anomaly: ["f1_score", "recall", "pr_auc", "precision"]
+    };
+    const detailMetricKeys = {
+      forecast: ["mae", "mape"],
+      anomaly: ["precision", "recall", "f1_score", "pr_auc"]
+    };
+
     function renderTabs() {
-      const tabs = appData?.overview?.tabs || [];
+      const tabs = (appData?.overview?.tabs || []).filter(({ key }) => key === "all" || displayKinds.includes(key));
       document.getElementById("kindTabs").innerHTML = tabs.map(({ key, label }) => (
         `<button class="tab ${state.kind === key ? "active" : ""}" type="button" data-kind="${key}">${label}</button>`
       )).join("");
@@ -1685,27 +1696,33 @@
     function renderKindBlocks(siteModels) {
       const kindLabels = {
         forecast: "Forecast",
-        anomaly: "Anomaly",
-        recommender: "Recommender"
+        anomaly: "Anomaly"
       };
       const kindDescriptions = {
         forecast: "prediction accuracy",
-        anomaly: "event detection",
-        recommender: "operation recommendation"
+        anomaly: "event detection"
       };
-      const metricCell = (metric) => {
+        const metricCell = (metric) => {
         if (!metric) return "--";
         const toneClass = metric.tone ? `${metric.tone}-text` : "";
         return `<span class="${toneClass}" ${metric.tooltip ? `title="${metric.tooltip}"` : ""}>${metric.displayValue}</span>`;
       };
+      const metricFor = (model, key) => [
+        ...(model.overviewMetrics || []),
+        ...(model.metrics || []),
+        ...(model.secondaryMetrics || [])
+      ].find((metric) => metric.key === key);
 
-      return ["forecast", "anomaly", "recommender"].map((kind) => {
+      return displayKinds.map((kind) => {
         const kindModels = siteModels.filter((model) => model.kind === kind);
         if (!kindModels.length) return "";
-        const metricColumns = kindModels[0].overviewMetrics.map((metric) => [
-          metric.label,
-          (model) => metricCell(model.overviewMetrics.find((item) => item.key === metric.key))
-        ]);
+        const metricColumns = (overviewMetricKeys[kind] || []).map((key) => {
+          const templateMetric = metricFor(kindModels[0], key);
+          return [
+            templateMetric?.label || key,
+            (model) => metricCell(metricFor(model, key))
+          ];
+        });
         const columns = [
           ["Model ID", (model) => `
             <span class="model-id-with-status">
@@ -1713,7 +1730,7 @@
               <span class="mono">${model.id}</span>
             </span>
           `],
-          [kind === "recommender" ? "Target / Scope" : "Target Point", (model) => `<span class="mono">${model.targetScope || model.target}</span>`],
+          ["Target Point", (model) => `<span class="mono">${model.target}</span>`],
           ...metricColumns,
           ["Last Evaluated", (model) => model.lastEval || "--"]
         ];
@@ -1819,11 +1836,10 @@
     function renderModelSelect(currentModel) {
       const kindLabels = {
         forecast: "Forecast",
-        anomaly: "Anomaly",
-        recommender: "Recommender"
+        anomaly: "Anomaly"
       };
       const sameSiteModels = models.filter((model) => model.siteId === currentModel.siteId);
-      document.getElementById("modelSelect").innerHTML = ["forecast", "anomaly", "recommender"].map((kind) => {
+      document.getElementById("modelSelect").innerHTML = displayKinds.map((kind) => {
         const kindModels = sameSiteModels.filter((model) => model.kind === kind);
         if (!kindModels.length) return "";
         return `
@@ -1896,12 +1912,16 @@
           </svg>` : `<span class="metric-note ${metric.tone ? `${metric.tone}-text` : ""}">${metric.delta || ""}</span> <span class="metric-note">${metric.note || ""}</span>`}
         </article>
       `;
-      const secondary = model.secondaryMetrics || [];
+      const allMetrics = [...(model.metrics || []), ...(model.secondaryMetrics || [])];
+      const metricByKey = new Map(allMetrics.map((metric) => [metric.key, metric]));
+      const selectedMetrics = (detailMetricKeys[model.kind] || [])
+        .map((key) => metricByKey.get(key))
+        .filter(Boolean);
       const secondarySection = document.getElementById("secondaryMetricSection");
       const secondaryEl = document.getElementById("secondaryMetricCards");
-      document.getElementById("metricCards").innerHTML = model.metrics.map(metricHtml).join("");
-      secondarySection.classList.toggle("hidden", secondary.length === 0);
-      secondaryEl.innerHTML = secondary.map(metricHtml).join("");
+      document.getElementById("metricCards").innerHTML = selectedMetrics.map(metricHtml).join("");
+      secondarySection.classList.add("hidden");
+      secondaryEl.innerHTML = "";
     }
 
     function axisLabelMarkup(labels, y) {
@@ -2091,8 +2111,16 @@
     }
 
     function renderCharts(model) {
-      document.getElementById("chartsContainer").innerHTML = model.charts.length
-        ? model.charts.map(chartCardMarkup).join("")
+      const charts = model.charts.map((chart) => {
+        if (model.kind !== "forecast" || chart.id !== "forecast_metrics_trend") return chart;
+        return {
+          ...chart,
+          title: "MAE / MAPE 趨勢",
+          series: chart.series.filter((series) => ["MAE", "MAPE"].includes(series.key || series.name))
+        };
+      });
+      document.getElementById("chartsContainer").innerHTML = charts.length
+        ? charts.map(chartCardMarkup).join("")
         : `<div class="chart-error">尚無圖表資料</div>`;
     }
 
@@ -2105,7 +2133,6 @@
             <td class="mono">${feature.name}</td>
             <td class="mono">${feature.psi}</td>
             <td class="mono">${feature.ksPValue}</td>
-            <td class="mono">${feature.importance}</td>
             <td><span class="${tone}-text">● ${displayStatus(feature.status)}</span></td>
           </tr>
         `;

@@ -9,7 +9,7 @@
 - 計算模型品質指標。
 - 計算資料品質與漂移指標。
 - 決定每個指標的 `status`。
-- 決定模型的 `health_status`。
+- 決定模型的 `status` 與資料漂移的 `drift_status`。
 - 整理圖表需要的 X 軸、數列、矩陣或分箱資料。
 - 輸出完整 `data.json`。
 
@@ -63,7 +63,7 @@
 
 - `id` 必須能對應 `models[].site_id`。
 - `stats` 是 Site 下各模型狀態的摘要。
-- Site 圓點不需要獨立的 `health_status`；前端會從該 Site 的全部 `models[].health_status` 取最嚴重狀態。
+- Site 圓點不需要獨立欄位；前端會從該 Site 顯示中的 Forecast 與 Anomaly 模型 `status` 取最嚴重狀態。Recommender 雖保留在 API，但目前不納入模型管理頁。
 
 ## 4. 模型共用結構
 
@@ -76,7 +76,8 @@
   "site_name": "台北冰水主機房",
   "target_point": "plant.energy_load",
   "model_version": "v1.0.0",
-  "health_status": "warning",
+  "status": "yellow",
+  "drift_status": "green",
   "last_evaluated": "07-15 14:30",
   "evaluated_at": "2024-07-15 14:30:00",
   "evaluation_period": "2024-07-01 ~ 2024-07-15",
@@ -125,7 +126,7 @@ Recommender 可以使用：
 | `label` | 是 | 畫面顯示名稱 |
 | `value` | 是 | 數字、字串或 `null` |
 | `unit` | 否 | `%`、`kW`、`ms` 等 |
-| `status` | 否 | `normal`、`warning`、`critical` |
+| `status` | 否 | `green`、`yellow`、`red` |
 | `tooltip` | 否 | 指標定義、公式或限制 |
 
 ### 缺值
@@ -147,42 +148,33 @@ Recommender 可以使用：
 
 模型端負責依自己的門檻產生 `status`。前端只套用顏色：
 
-- `normal`：綠色
-- `warning`：黃色
-- `critical`：紅色
+- `green`：綠色
+- `yellow`：黃色
+- `red`：紅色
 - 未提供或未知值：中性色
 
 ## 6. Forecast 指標
 
 ### 模型總覽 `overview_metrics`
 
-固定順序：
+目前模型管理頁總覽顯示：
 
-1. `wape`
+1. `rmse`
 2. `r_squared`
-3. `rmse`
-4. `psi`
+3. `mae`
+4. `mape`
 
-### 詳細頁核心 `detail_metrics.core`
+目前詳細頁主要顯示：
 
 1. `mae`
-2. `rmse`
-3. `wape`
-4. `r_squared`
-5. `evaluation_coverage`
+2. `mape`
 
-### 詳細頁次要 `detail_metrics.secondary`
-
-- `mape`
-- `smape`
-- `bias`
-- `baseline_wape`
-- `skill_score`
+API 仍可保留 `rmse`、`wape`、`r_squared`、`smape`、`bias`、`baseline_wape`、`skill_score` 與 `evaluation_coverage`，但目前不放入主要詳細指標卡。
 
 ### 建議圖表
 
 - Actual、Prediction、Baseline 折線圖
-- MAE、RMSE、WAPE、R² 歷史趨勢
+- MAE、MAPE 趨勢圖；Skill Score 目前不顯示
 - 預測誤差分布
 - 殘差趨勢
 
@@ -190,31 +182,21 @@ Recommender 可以使用：
 
 ### 模型總覽 `overview_metrics`
 
-固定順序：
+目前模型管理頁總覽顯示：
 
 1. `f1_score`
 2. `recall`
 3. `pr_auc`
-4. `psi`
+4. `precision`
 
-### 詳細頁核心 `detail_metrics.core`
+目前詳細頁主要顯示：
 
-1. `f1_score`
-2. `precision`
-3. `recall`
+1. `precision`
+2. `recall`
+3. `f1_score`
 4. `pr_auc`
-5. `evaluation_coverage`
 
-### 詳細頁次要 `detail_metrics.secondary`
-
-- `roc_auc`
-- `false_positive_rate`
-- `false_negative_rate`
-- `anomaly_event_count`
-- `anomaly_rate`
-- `threshold`
-- `score_p95`
-- `score_p99`
+API 仍可保留 `evaluation_coverage`、ROC-AUC、誤報率、漏報率、事件數、Threshold、Score P95／P99 等資料，但目前不放入主要詳細指標卡。
 
 只有輸出真正分類機率的模型才使用：
 
@@ -322,32 +304,35 @@ Forecast 與 Anomaly 可增加：
 ]
 ```
 
-## 10. Health Status
+## 10. 模型狀態與資料漂移
 
 模型端直接提供：
 
 ```json
 {
-  "health_status": "warning"
+  "status": "yellow",
+  "drift_status": "red"
 }
 ```
 
 前端呈現：
 
-- `normal`：綠點
-- `warning`：黃點
-- `critical`：紅點
+- `status: green`：Model ID 前綠點
+- `status: yellow`：Model ID 前黃點
+- `status: red`：Model ID 前紅點
 - 其他值：灰點
 
 模型總覽不顯示獨立的 Health Status 欄位，圓點放在 Model ID 前方。詳細頁也不顯示獨立的 Health Status 項目，圓點同樣放在 Model ID 前方。
 
-Site 圓點會檢查該 Site 的全部模型，依下列順序取最嚴重狀態：
+Site 圓點會檢查該 Site 顯示中的 Forecast 與 Anomaly 模型，依下列順序取最嚴重狀態：
 
 ```text
 critical > warning > normal > unknown
 ```
 
-前端不根據模型指標重新計算 Health Status。狀態文字只存在 tooltip 與無障礙標籤。
+`status` 是模型整體健康狀態；`drift_status` 是輸入資料漂移狀態。Model ID 主燈號只讀 `status`，不讀 `drift_status`。
+
+前端不根據模型指標重新計算狀態。狀態文字只存在 tooltip 與無障礙標籤。
 
 ## 11. Feature Drift
 
@@ -362,6 +347,7 @@ critical > warning > normal > unknown
 ```
 
 前端直接使用 `status`，不根據 `psi` 重新判斷。
+漂移表格目前只顯示 `feature_name`、`psi`、`ks_p_value` 與 `status`；`importance` 可保留在 API，但不顯示。
 
 ## 12. Line 與 Bar 圖表
 
@@ -468,6 +454,6 @@ FN  TP
 - 每個模型有 5 個必要核心指標。
 - 必要指標沒有值時使用 `value: null`，不省略物件。
 - 每個模型都有 PSI、缺失率、資料覆蓋率、資料新鮮度。
-- 指標狀態與 Health Status 由模型端決定。
+- 指標狀態、模型 `status` 與 `drift_status` 由模型端決定。
 - Line／Bar 的 X 軸長度等於每個序列長度。
 - 圖表數值由模型端提供，前端不重新聚合。
